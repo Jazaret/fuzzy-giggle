@@ -173,10 +173,15 @@ module.exports.emailTasks = (event, context, callback) => {
       ]
     },
     Message: {
-
       Subject: {
-        Data: tasksBody,
+        Data: 'task subject',
         Charset: 'UTF-8'
+      },
+      Body: {
+        Html: {
+          Data: tasksBody,
+          Charset: 'UTF-8'
+        }
       }
     },
     Source: 'Me <jazaret@gmail.com>',
@@ -192,7 +197,7 @@ module.exports.emailTasks = (event, context, callback) => {
       context.fail('Internal Error: The email could not be sent.');
     } else {
       console.log(data);           // successful response
-      context.succeed('The email was successfully sent to ' + event.email);
+      context.succeed('The email was successfully sent to this guy');
     }
   });
 }
