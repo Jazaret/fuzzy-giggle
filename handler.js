@@ -1,6 +1,7 @@
 'use strict';
 
 console.log('Loading function');
+const aws = require('aws-sdk');
 const uuid = require('node-uuid');
 const doc = require('dynamodb-doc');
 const dynamo = new doc.DynamoDB();
@@ -200,4 +201,4 @@ module.exports.emailTasks = (event, context, callback) => {
       context.succeed('The email was successfully sent to this guy');
     }
   });
-}
+};

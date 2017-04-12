@@ -82,7 +82,7 @@ functions:
               method: delete
               path: tasks              
   emailTasks:
-    handler: emailTasks
+    handler: handler.emailTasks
     events:
           - schedule: rate(24 hours)   
 
