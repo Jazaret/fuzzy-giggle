@@ -39,15 +39,34 @@ module.exports.getTasks = (event, context, callback) => {
   });
 };
 
+module.exports.deleteTask = (event, context, callback) => {
+
+  var result, response;
+
+  dynamo.deleteItem({ TableName: tableName, Key: {taskId: event.taskId} }, function (err, data) {
+    if (err) {
+      callback(err, null);
+    } else {
+      response = {
+        statusCode: 200,
+        body: JSON.stringify({
+          message: data
+        }),
+      };
+      callback(null, response);
+    }
+  });
+};
+
 module.exports.addTask = (event, context, callback) => {
   var response;
   var newId = uuid.v1();
   console.log('id = ' + newId);
 
-  if (!event.name || !event.description) {
+  if (!event.user || !event.description) {
     response = {
       statusCode: 400,
-      body: (!event.name) ? 'Name is required' : 'Description is required'
+      body: (!event.user) ? 'user is required' : 'Description is required'
     };
     callback(null, response);
     return;
@@ -56,7 +75,7 @@ module.exports.addTask = (event, context, callback) => {
   var params = {
     Item: {
       taskId: newId,
-      name: event.name,
+      user: event.user,
       description: event.description
     },
     TableName: tableName
@@ -79,10 +98,10 @@ module.exports.addTask = (event, context, callback) => {
 
 module.exports.updateTask = (event, context, callback) => {
   var response, params;
-  if (!event.name || !event.description) {
+  if (!event.user || !event.description) {
     response = {
       statusCode: 400,
-      body: (!event.name) ? 'name is required' : 'description is required'
+      body: (!event.user) ? 'user is required' : 'description is required'
     };
     callback(null, response);
     return;
@@ -115,7 +134,7 @@ module.exports.updateTask = (event, context, callback) => {
         var params = {
           Item: {
             taskId: data.Item.taskId,
-            name: event.name,
+            user: event.user,
             description: event.description
           },
           TableName: tableName
@@ -137,8 +156,5 @@ module.exports.updateTask = (event, context, callback) => {
       }
     }
   });
-  //End GetItem
   return;
-
-
 };

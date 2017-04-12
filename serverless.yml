@@ -74,7 +74,13 @@ functions:
       events:
           - http: 
               method: put
-              path: tasks              
+              path: tasks  
+  deleteTask:
+      handler: handler.deleteTask
+      events:
+          - http: 
+              method: delete
+              path: tasks                                
   hello:
     handler: handler.hello
 
