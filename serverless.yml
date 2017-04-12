@@ -81,10 +81,10 @@ functions:
           - http: 
               method: delete
               path: tasks              
-#  emailTasks:
-#    handler: emailTasks
-#    events:
-#          - schedule: rate(24 hours)   
+  emailTasks:
+    handler: emailTasks
+    events:
+          - schedule: rate(24 hours)   
 
   hello:
     handler: handler.hello

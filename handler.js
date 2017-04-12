@@ -43,7 +43,7 @@ module.exports.deleteTask = (event, context, callback) => {
 
   var result, response;
 
-  dynamo.deleteItem({ TableName: tableName, Key: {taskId: event.taskId} }, function (err, data) {
+  dynamo.deleteItem({ TableName: tableName, Key: { taskId: event.taskId } }, function (err, data) {
     if (err) {
       callback(err, null);
     } else {
@@ -158,3 +158,41 @@ module.exports.updateTask = (event, context, callback) => {
   });
   return;
 };
+
+module.exports.emailTasks = (event, context, callback) => {
+  var ses = new aws.SES();
+
+  //get tasks that compmlete is null or whitespace for each user
+
+  var tasksBody = 'Incomplete Tasks for you:';
+
+  var params = {
+    Destination: {
+      ToAddresses: [
+        'jazaret@gmail.com'
+      ]
+    },
+    Message: {
+
+      Subject: {
+        Data: tasksBody,
+        Charset: 'UTF-8'
+      }
+    },
+    Source: 'Me <jazaret@gmail.com>',
+    ReplyToAddresses: [
+      'Me <jazaret@gmail.com>'
+    ]
+  };
+
+  // Send the email
+  ses.sendEmail(params, function (err, data) {
+    if (err) {
+      console.log(err, err.stack);
+      context.fail('Internal Error: The email could not be sent.');
+    } else {
+      console.log(data);           // successful response
+      context.succeed('The email was successfully sent to ' + event.email);
+    }
+  });
+}
