@@ -32,20 +32,20 @@ module.exports.getTasks = (event, context, callback) => {
                 body: JSON.stringify({
                   message: data
                 }),
-              };            
+              };              
+            callback(null, response);  
         }
-        callback(null, response);
     });
 };
 
-module.exports.putTasks = (event, context, callback) => {
-
+module.exports.addTask = (event, context, callback) => {
+    var response;
     var newId = uuid.v1();
     console.log('id = ' + newId);
 
     if (!event.name || !event.description) {
         response = {
-          statusCode: 200,
+          statusCode: 400,
           body: (!event.name) ? "Name is required" : "Description is required"          
         };        
         callback(null, response);
@@ -53,7 +53,7 @@ module.exports.putTasks = (event, context, callback) => {
     }
 
     var newTask = {
-      newId: newid,
+      newId: newId,
       name: name,
       description: description,
       priority: priority,
@@ -69,7 +69,13 @@ module.exports.putTasks = (event, context, callback) => {
         if (err) {
             callback(err, null);
         } else {
-            callback(null, data);
+            response = {
+                statusCode: 200,
+                body: JSON.stringify({
+                  message: data
+                }),
+              };              
+            callback(null, response);
         }
     });
 };
