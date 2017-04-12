@@ -191,14 +191,49 @@ module.exports.emailTasks = (event, context, callback) => {
     ]
   };
 
+  //Get unique names on list of tasks to loop through
+  const uniqueNames = [...new Set(listOfTasks.map(item => item.name))];
+
+  uniqueNames.forEach(function(value){
+    params.Destination.ToAddresses = value;
+
+    //get list of tasks for this person
+
+    //send email here
+  });
+
   // Send the email
   ses.sendEmail(params, function (err, data) {
     if (err) {
       console.log(err, err.stack);
       context.fail('Internal Error: The email could not be sent.');
     } else {
-      console.log(data);           // successful response
+      console.log('success; ' + data);           // successful response
       context.succeed('The email was successfully sent to this guy');
     }
+  });
+};
+
+module.exports.findTasksNotCompleted = (event, context, callback) => {
+  
+  var params = {
+      TableName: tableName,
+      FilterExpression: 'attribute_not_exists(completed)',
+      ScanFilter: { // optional (map of attribute name to Condition)
+    
+        attribute_name: {
+            ComparisonOperator: 'NULL', // (EQ | NE | IN | LE | LT | GE | GT | BETWEEN | 
+                                      //  NOT_NULL | NULL | CONTAINS | NOT_CONTAINS | BEGINS_WITH)
+            AttributeValueList: [ { S: 'STRING_VALUE' }, ],
+        },
+        // more conditions ...
+    }
+  };  
+
+  dynamo.query(params, function(err, data) {
+      if (err)
+          console.log(JSON.stringify(err, null, 2));
+      else
+          console.log(JSON.stringify(data, null, 2));
   });
 };

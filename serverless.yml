@@ -86,6 +86,9 @@ functions:
     events:
           - schedule: rate(24 hours)   
 
+  findTasksNotCompleted: 
+    handler: handler.findTasksNotCompleted
+
   hello:
     handler: handler.hello
 
