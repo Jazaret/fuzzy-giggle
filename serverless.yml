@@ -69,6 +69,12 @@ functions:
           - http: 
               method: post
               path: tasks
+  addTask:
+      handler: handler.updateTask
+      events:
+          - http: 
+              method: put
+              path: tasks              
   hello:
     handler: handler.hello
 

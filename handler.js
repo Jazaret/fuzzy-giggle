@@ -4,6 +4,7 @@ console.log('Loading function');
 const uuid = require('node-uuid');
 const doc = require('dynamodb-doc');
 const dynamo = new doc.DynamoDB();
+const tableName = process.env.TABLE_NAME;
 
 
 module.exports.hello = (event, context, callback) => {
@@ -23,7 +24,7 @@ module.exports.getTasks = (event, context, callback) => {
 
   var result, response;
 
-  dynamo.scan({ TableName: process.env.TABLE_NAME }, function(err, data) {
+  dynamo.scan({ TableName: tableName }, function(err, data) {
         if (err) {
             callback(err, null);
         } else {
@@ -53,14 +54,12 @@ module.exports.addTask = (event, context, callback) => {
     }
     
     var params = {
-        Item: {
-          taskId: newId,
-          name: event.name,
-          description: event.description,
-          priority: event.priority,
-          completed: event.completed
-        },
-        TableName: process.env.TABLE_NAME
+      Item: {
+        taskId: newId,
+        name: event.name,
+        description: event.description
+      },
+      TableName: tableName
     };
     
     dynamo.putItem(params, function(err, data) {
@@ -78,3 +77,38 @@ module.exports.addTask = (event, context, callback) => {
     });
 };
 
+module.exports.updateTask = (event, context, callback) => {
+    var response;
+    
+    if (!event.name || !event.description) {
+        response = {
+          statusCode: 400,
+          body: (!event.name) ? "Name is required" : "Description is required"          
+        };        
+        callback(null, response);
+        return;
+    }
+    
+    var params = {
+      Item: {
+        taskId: event.taskId,
+        name: event.name,
+        description: event.description
+      },
+      TableName: tableName
+    };
+    
+    dynamo.updateItem(params, function(err, data) {
+        if (err) {
+            callback(err, null);
+        } else {
+            response = {
+                statusCode: 200,
+                body: JSON.stringify({
+                  message: data
+                }),
+              };              
+            callback(null, response);
+        }
+    });
+};
