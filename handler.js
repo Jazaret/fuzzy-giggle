@@ -51,17 +51,15 @@ module.exports.addTask = (event, context, callback) => {
         callback(null, response);
         return;
     }
-
-    var newTask = {
-      newId: newId,
-      name: name,
-      description: description,
-      priority: priority,
-      completed: completed
-    }
     
     var params = {
-        Item: event,
+        Item: {
+          taskId: newId,
+          name: event.name,
+          description: event.description,
+          priority: event.priority,
+          completed: event.completed
+        },
         TableName: process.env.TABLE_NAME
     };
     
