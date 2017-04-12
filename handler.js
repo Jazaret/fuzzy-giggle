@@ -226,7 +226,7 @@ module.exports.findTasksNotCompleted = (event, context, callback) => {
                                       //  NOT_NULL | NULL | CONTAINS | NOT_CONTAINS | BEGINS_WITH)
             AttributeValueList: [ { S: 'STRING_VALUE' }, ],
         },
-        // more conditions ...
+        // more conditions ....
     }
   };  
 
