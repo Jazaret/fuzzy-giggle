@@ -1,0 +1,24 @@
+{
+  "name": "fuzzy-giggle",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jazaret/fuzzy-giggle.git"
+  },
+  "author": "Javier Azaret",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Jazaret/fuzzy-giggle/issues"
+  },
+  "homepage": "https://github.com/Jazaret/fuzzy-giggle#readme",
+  "dependencies": {
+    "aws-sdk": "^2.41.0",
+    "dynamodb-doc": "^1.0.0",
+    "node-uuid": "^1.4.8"
+  }
+}
