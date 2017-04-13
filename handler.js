@@ -192,15 +192,15 @@ module.exports.emailTasks = (event, context, callback) => {
   };
 
   //Get unique names on list of tasks to loop through
-  const uniqueNames = [...new Set(listOfTasks.map(item => item.name))];
+  //const uniqueNames = [...new Set(listOfTasks.map(item => item.name))];
 
-  uniqueNames.forEach(function(value){
-    params.Destination.ToAddresses = value;
+  //uniqueNames.forEach(function(value){
+    //params.Destination.ToAddresses = value;
 
     //get list of tasks for this person
 
     //send email here
-  });
+  //});
 
   // Send the email
   ses.sendEmail(params, function (err, data) {
