@@ -29,6 +29,7 @@ module.exports.getTasks = (event, context, callback) => {
     if (err) {
       callback(err, null);
     } else {
+      data.Items = sortTasks(data.Items);
       response = {
         statusCode: 200,
         body: JSON.stringify({
@@ -204,6 +205,7 @@ module.exports.emailTasks = (event, context, callback) => {
       data.Items.forEach(function (value) {
         //go through each task to see if complete
         if (!value.completed) {
+          console.log('not completed ' + value.description);
           //if not complete check if recipient already exists
           if (!emailsToSend[value.user]) {
             //if recipient doesn't exist then add to master list
@@ -226,7 +228,6 @@ module.exports.emailTasks = (event, context, callback) => {
         params.Destination.ToAddresses = [value];
 
         //get list of tasks for this person and set the body
-        //get tasks that compmlete is null or whitespace for each user
         var tasks = emailsToSend[value];
         tasks.forEach(function (value) {
           bodyMsg += value.description + '<br>';
@@ -235,7 +236,7 @@ module.exports.emailTasks = (event, context, callback) => {
         
         params.Message.Body.Html.Data = bodyMsg;
         // Send the email
-        console.log("send email");
+        console.log('send email: ' + value + ' msg:'+ bodyMsg);
         ses.sendEmail(params, function (err, data) {
           if (err) {
             console.log(err, err.stack);
@@ -283,3 +284,22 @@ function validateTask(task)  {
   }
   return;
 };
+
+
+//Sort tasks by completed desc (blanks on top) THEN BY priority asc
+function sortTasks(tasks) {
+    tasks.sort(function(x, y) {
+    if (!x.completed && y.completed) {
+      return -1
+    } else if (x.completed && !y.completed) {
+      return 1
+    } else if (x.completed !== y.completed) {
+      var dateX = Date.parse(x.completed),
+        dateY = Date.parse(y.completed);
+      return (dateX - dateY) * -1;
+    }
+    return x.priority - y.priority;
+  });
+
+  return tasks;
+}
