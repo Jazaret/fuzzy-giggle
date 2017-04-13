@@ -1,0 +1,160 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "API Gateway - Fuzzy-Giggle Validation jazaret@gmail.com"
+    },
+    "schemes": [
+        "http"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "x-amazon-apigateway-request-validators": {
+        "full": {
+            "validateRequestBody": true,
+            "validateRequestParameters": true
+        },
+        "body-only": {
+            "validateRequestBody": true,
+            "validateRequestParameters": false
+        }
+    },
+    "x-amazon-apigateway-request-validator": "full",
+    "paths": {
+        "/tasks": {
+            "post": {
+                "x-amazon-apigateway-request-validator": "body-only",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "AddTask",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Task"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "schema": {
+                            "$ref": "#/definitions/Message"
+                        }
+                    },
+                    "400": {
+                        "schema": {
+                            "$ref": "#/definitions/Message"
+                        }
+                    }
+                },
+                "x-amazon-apigateway-integration": {
+                    "responses": {
+                        "default": {
+                            "statusCode": "200",
+                            "responseTemplates": {
+                                "application/json": "{\"message\" : \"Task successfully created\"}"
+                            }
+                        }
+                    },
+                    "requestTemplates": {
+                        "application/json": "{\"statusCode\": 200}"
+                    },
+                    "passthroughBehavior": "never",
+                    "type": "mock"
+                }
+            },
+            "get": {
+                "parameters": [
+                ],
+                "responses": {
+                    "200": {
+                        "schema": {
+                            "$ref": "#/definitions/Tasks"
+                        }
+                    },
+                    "400": {
+                        "schema": {
+                            "$ref": "#/definitions/Message"
+                        }
+                    }
+                },
+                "x-amazon-apigateway-integration": {
+                    "responses": {
+                        "default": {
+                            "statusCode": "200",
+                            "responseTemplates": {
+                                "application/json": ""
+                            }
+                        }
+                    },
+                    "requestTemplates": {
+                        "application/json": "{\"statusCode\": 200}"
+                    },
+                    "passthroughBehavior": "never",
+                    "type": "mock"
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Tasks": {
+            "type": "array",
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "title": "Tasks Schema",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "order": {
+                        "$ref": "#/definitions/Task"
+                    }
+                }
+            }
+        },
+        "Task": {
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "title": "A task",
+            "required": [
+                "description",
+                "priority"
+            ],
+            "properties": {
+                "taskId": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 254,
+                    "title": "User",
+                    "description": "User's email address"
+                },
+                "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "title": "Description of the task"
+                },
+                "priority": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 9,
+                    "title": "Priority",
+                    "description": "Task priority, as a single-digit integer. 0 is highest priority"
+                },
+                "completed": {
+                    "type": "string",
+                    "format": "date-time",
+                    "title": "Completed",
+                    "description": "Completed datetime, formatted as an ISO8601 string"
+                }
+            }
+        },
+        "Message": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

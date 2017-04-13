@@ -108,7 +108,7 @@ module.exports.updateTask = (event, context, callback) => {
     return;
   }
 
-  //GetItem
+  //GetItem to make sure it's an update
   params = {
     TableName: tableName,
     Key: {
@@ -163,9 +163,12 @@ module.exports.updateTask = (event, context, callback) => {
 module.exports.emailTasks = (event, context, callback) => {
   var ses = new aws.SES();
 
-  //get tasks that compmlete is null or whitespace for each user
-
   var tasksBody = 'Incomplete Tasks for you:';
+
+  var emailsToSend = {};
+  emailsToSend['jazaret@gmail.com'] = [{ description: 'hi', completed: '' }, { description: 'bye', completed: '' }];
+  console.log(emailsToSend);
+  var uniqueNames = [];
 
   var params = {
     Destination: {
@@ -191,49 +194,78 @@ module.exports.emailTasks = (event, context, callback) => {
     ]
   };
 
-  //Get unique names on list of tasks to loop through
-  //const uniqueNames = [...new Set(listOfTasks.map(item => item.name))];
-
-  //uniqueNames.forEach(function(value){
-    //params.Destination.ToAddresses = value;
-
-    //get list of tasks for this person
-
-    //send email here
-  //});
-
-  // Send the email
-  ses.sendEmail(params, function (err, data) {
+  dynamo.scan({ TableName: tableName }, function (err, data) {
     if (err) {
-      console.log(err, err.stack);
-      context.fail('Internal Error: The email could not be sent.');
+      console.log(err);
+      context.fail('Internal Error:');
     } else {
-      console.log('success; ' + data);           // successful response
-      context.succeed('The email was successfully sent to this guy');
+      data.foreach(function (value) {
+        //go through each task to see if complete
+        if (!value.completed) {
+          //if not complete check if recipient already exists
+          if (!emailsToSend[value.name]) {
+            //if recipient doesn't exist then add to master list
+            uniqueNames.push(value.name);
+            //initialize dictionary entry
+            emailsToSend[value.name] = [];
+          }
+          //add task to email
+          emailsToSend[value.name].push({
+            description: value.description
+          });
+        }
+      });
+
+      console.log(uniqueNames);
+
+      uniqueNames.forEach(function (value) {
+        //set address
+        params.Destination.ToAddresses = [value];
+
+        //get list of tasks for this person and set the body
+        //get tasks that compmlete is null or whitespace for each user
+        var tasks = emailsToSend[value];
+        tasks.foreach(function (value) {
+          params.Message.Body.Html.Data += value.description;
+        });
+
+        // Send the email
+        ses.sendEmail(params, function (err, data) {
+          if (err) {
+            console.log(err, err.stack);
+          } else {
+            console.log('success; ' + data);
+          }
+        });
+      });
+
+      context.succeed('Jobs done');
     }
   });
+
+
 };
 
 module.exports.findTasksNotCompleted = (event, context, callback) => {
-  
-  var params = {
-      TableName: tableName,
-      FilterExpression: 'attribute_not_exists(completed)',
-      ScanFilter: { // optional (map of attribute name to Condition)
-    
-        attribute_name: {
-            ComparisonOperator: 'NULL', // (EQ | NE | IN | LE | LT | GE | GT | BETWEEN | 
-                                      //  NOT_NULL | NULL | CONTAINS | NOT_CONTAINS | BEGINS_WITH)
-            AttributeValueList: [ { S: 'STRING_VALUE' }, ],
-        },
-        // more conditions .....
-    }
-  };  
 
-  dynamo.query(params, function(err, data) {
-      if (err)
-          console.log(JSON.stringify(err, null, 2));
-      else
-          console.log(JSON.stringify(data, null, 2));
+  var params = {
+    TableName: tableName,
+    FilterExpression: 'attribute_not_exists(completed)',
+    ScanFilter: { // optional (map of attribute name to Condition)
+
+      attribute_name: {
+        ComparisonOperator: 'NULL', // (EQ | NE | IN | LE | LT | GE | GT | BETWEEN | 
+        //  NOT_NULL | NULL | CONTAINS | NOT_CONTAINS | BEGINS_WITH)
+        AttributeValueList: [{ S: 'STRING_VALUE' },],
+      },
+      // more conditions .....
+    }
+  };
+
+  dynamo.query(params, function (err, data) {
+    if (err)
+      console.log(JSON.stringify(err, null, 2));
+    else
+      console.log(JSON.stringify(data, null, 2));
   });
 };
