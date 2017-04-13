@@ -168,7 +168,6 @@ module.exports.emailTasks = (event, context, callback) => {
   var tasksBody = 'Incomplete Tasks for you:';
 
   var emailsToSend = {};
-  emailsToSend['jazaret@gmail.com'] = [{ description: 'hi', completed: '' }, { description: 'bye', completed: '' }];
   console.log(emailsToSend);
   var uniqueNames = [];
 
@@ -201,18 +200,19 @@ module.exports.emailTasks = (event, context, callback) => {
       console.log(err);
       context.fail('Internal Error:');
     } else {
-      data.foreach(function (value) {
+      console.log(data);
+      data.Items.forEach(function (value) {
         //go through each task to see if complete
         if (!value.completed) {
           //if not complete check if recipient already exists
-          if (!emailsToSend[value.name]) {
+          if (!emailsToSend[value.user]) {
             //if recipient doesn't exist then add to master list
-            uniqueNames.push(value.name);
+            uniqueNames.push(value.user);
             //initialize dictionary entry
-            emailsToSend[value.name] = [];
+            emailsToSend[value.user] = [];
           }
           //add task to email
-          emailsToSend[value.name].push({
+          emailsToSend[value.user].push({
             description: value.description
           });
         }
@@ -228,13 +228,14 @@ module.exports.emailTasks = (event, context, callback) => {
         //get list of tasks for this person and set the body
         //get tasks that compmlete is null or whitespace for each user
         var tasks = emailsToSend[value];
-        tasks.foreach(function (value) {
+        tasks.forEach(function (value) {
           bodyMsg += value.description + '<br>';
           
         });
         
         params.Message.Body.Html.Data = bodyMsg;
         // Send the email
+        console.log("send email");
         ses.sendEmail(params, function (err, data) {
           if (err) {
             console.log(err, err.stack);
