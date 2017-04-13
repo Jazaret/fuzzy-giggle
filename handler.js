@@ -64,10 +64,11 @@ module.exports.addTask = (event, context, callback) => {
   var newId = uuid.v1();
   console.log('id = ' + newId);
 
-  if (!event.user || !event.description) {
+  var validateMsg = validateTask(event);
+  if (validateMsg) {
     response = {
       statusCode: 400,
-      body: (!event.user) ? 'user is required' : 'Description is required'
+      body: validateMsg
     };
     callback(null, response);
     return;
@@ -99,10 +100,11 @@ module.exports.addTask = (event, context, callback) => {
 
 module.exports.updateTask = (event, context, callback) => {
   var response, params;
-  if (!event.user || !event.description) {
+  var validateMsg = validateTask(event);
+  if (validateMsg) {
     response = {
       statusCode: 400,
-      body: (!event.user) ? 'user is required' : 'description is required'
+      body: validateMsg
     };
     callback(null, response);
     return;
@@ -219,6 +221,7 @@ module.exports.emailTasks = (event, context, callback) => {
       console.log(uniqueNames);
 
       uniqueNames.forEach(function (value) {
+        var bodyMsg = 'Tasks to complete: <br><br>';
         //set address
         params.Destination.ToAddresses = [value];
 
@@ -226,9 +229,11 @@ module.exports.emailTasks = (event, context, callback) => {
         //get tasks that compmlete is null or whitespace for each user
         var tasks = emailsToSend[value];
         tasks.foreach(function (value) {
-          params.Message.Body.Html.Data += value.description;
+          bodyMsg += value.description + '<br>';
+          
         });
-
+        
+        params.Message.Body.Html.Data = bodyMsg;
         // Send the email
         ses.sendEmail(params, function (err, data) {
           if (err) {
@@ -268,4 +273,12 @@ module.exports.findTasksNotCompleted = (event, context, callback) => {
     else
       console.log(JSON.stringify(data, null, 2));
   });
+};
+
+//validates the required properties of a task
+function validateTask(task)  {
+  if (task.priority == null || !task.description){
+    return (task.description) ? 'priority is required' : 'description is required'
+  }
+  return;
 };
