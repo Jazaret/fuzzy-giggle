@@ -25,7 +25,7 @@ provider:
 
 # you can overwrite defaults here
 #  stage: dev
-#  region: us-east-1
+  region: us-east-1
 
 # you can add statements to the Lambda function's IAM Role here
 #  iamRoleStatements:
@@ -58,6 +58,7 @@ provider:
 
 functions:
   getTasks:
+    role: myRoleForGetTasks
     handler: handler.getTasks
     events:
         - http: 
@@ -93,34 +94,6 @@ functions:
     handler: handler.hello
 
 
-#    The following are a few example events you can configure
-#    NOTE: Please make sure to change your handler code to work with those events
-#    Check the event documentation for details
-#    events:
-#      - http:
-#          path: users/create
-#          method: get
-#      - s3: ${env:BUCKET}
-#      - schedule: rate(10 minutes)
-#      - sns: greeter-topic
-#      - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
-#      - alexaSkill
-#      - iot:
-#          sql: "SELECT * FROM 'some_topic'"
-#      - cloudwatchEvent:
-#          event:
-#            source:
-#              - "aws.ec2"
-#            detail-type:
-#              - "EC2 Instance State-change Notification"
-#            detail:
-#              state:
-#                - pending
-
-#    Define function environment variables here
-#    environment:
-#      variable2: value2
-
 resources:  
   Resources:
     DynamoDbTable:
@@ -150,3 +123,38 @@ resources:
               Resource: arn:aws:dynamodb:*:*:table/tasks-table
         Roles:
           - Ref: IamRoleLambdaExecution
+    myRoleForGetTasks:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: policyForLogs
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow # note that these rights are given in the default policy and are required if you want logs out of your lambda(s)
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: arn:aws:logs:*:*:log-group:/aws/lambda/*:*:*      
+          - PolicyName: myPolicyForGetTasks
+            PolicyDocument: 
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    # - dynamodb:GetItem
+                    # - dynamodb:PutItem
+                    # - dynamodb:Query
+                    - dynamodb:Scan
+                    # - dynamodb:UpdateItem
+                    # - dynamodb:UpdateTable
+                  Resource: arn:aws:dynamodb:*:*:table/tasks-table
