@@ -33,7 +33,7 @@ module.exports.getTasks = (event, context, callback) => {
       response = {
         statusCode: 200,
         body: JSON.stringify({
-          message: data
+          message: data.Items
         }),
       };
       callback(null, response);
@@ -66,21 +66,18 @@ module.exports.addTask = (event, context, callback) => {
   console.log('id = ' + newId);
 
   var validateMsg = validateTask(event);
+
   if (validateMsg) {
     response = {
-      statusCode: 400,
+      statusCode: 405,
       body: validateMsg
     };
     callback(null, response);
     return;
   }
-
+  event.taskId = newId;
   var params = {
-    Item: {
-      taskId: newId,
-      user: event.user,
-      description: event.description
-    },
+    Item: formatTaskToUpsert(event),
     TableName: tableName
   };
 
@@ -110,12 +107,13 @@ module.exports.updateTask = (event, context, callback) => {
     callback(null, response);
     return;
   }
+  var task = modelTask(event);
 
   //GetItem to make sure it's an update
   params = {
     TableName: tableName,
     Key: {
-      taskId: event.taskId
+      taskId: task.taskId
     },
     AttributesToGet: ['taskId']
   };
@@ -135,12 +133,9 @@ module.exports.updateTask = (event, context, callback) => {
         callback(null, response);
       } else {
         //Item found, now update
+        task.taskId = data.Item.taskId;
         var params = {
-          Item: {
-            taskId: data.Item.taskId,
-            user: event.user,
-            description: event.description
-          },
+          Item: formatTaskToUpsert(task),
           TableName: tableName
         };
 
@@ -196,28 +191,29 @@ module.exports.emailTasks = (event, context, callback) => {
     ]
   };
 
-  dynamo.scan({ TableName: tableName }, function (err, data) {
+  var scanParams = {
+    TableName: tableName,
+    FilterExpression: 'attribute_not_exists(completed)',
+  };
+
+  dynamo.scan(scanParams, function (err, data) {
     if (err) {
       console.log(err);
       context.fail('Internal Error:');
     } else {
       console.log(data);
       data.Items.forEach(function (value) {
-        //go through each task to see if complete
-        if (!value.completed) {
-          console.log('not completed ' + value.description);
-          //if not complete check if recipient already exists
-          if (!emailsToSend[value.user]) {
-            //if recipient doesn't exist then add to master list
-            uniqueNames.push(value.user);
-            //initialize dictionary entry
-            emailsToSend[value.user] = [];
-          }
-          //add task to email
-          emailsToSend[value.user].push({
-            description: value.description
-          });
+        //check if recipient already exists
+        if (!emailsToSend[value.user]) {
+          //if recipient doesn't exist then add to master list
+          uniqueNames.push(value.user);
+          //initialize dictionary entry
+          emailsToSend[value.user] = [];
         }
+        //add task to email
+        emailsToSend[value.user].push({
+          description: value.description
+        });
       });
 
       console.log(uniqueNames);
@@ -231,12 +227,12 @@ module.exports.emailTasks = (event, context, callback) => {
         var tasks = emailsToSend[value];
         tasks.forEach(function (value) {
           bodyMsg += value.description + '<br>';
-          
+
         });
-        
+
         params.Message.Body.Html.Data = bodyMsg;
         // Send the email
-        console.log('send email: ' + value + ' msg:'+ bodyMsg);
+        console.log('send email: ' + value + ' msg:' + bodyMsg);
         ses.sendEmail(params, function (err, data) {
           if (err) {
             console.log(err, err.stack);
@@ -253,42 +249,153 @@ module.exports.emailTasks = (event, context, callback) => {
 
 };
 
-module.exports.findTasksNotCompleted = (event, context, callback) => {
+//Method to handle messages to and from users.
+//Creator of message can specify whether recipient has access to modify message
+module.exports.upsertMessage = (event, context, callback) => {
+  console.log(context);
+  var response, message;
+  var contextUserId = (context.identity) ? context.identity.cognitoIdentityId : context.awsRequestId;
+  var messageTable = 'message-table';
+  var isNewMessage = !event.messageId;
 
-  var params = {
-    TableName: tableName,
-    FilterExpression: 'attribute_not_exists(completed)',
-    ScanFilter: { // optional (map of attribute name to Condition)
+  if (isNewMessage) {
+    message = formatMessageToAdd(event);
+  }
 
-      attribute_name: {
-        ComparisonOperator: 'NULL', // (EQ | NE | IN | LE | LT | GE | GT | BETWEEN | 
-        //  NOT_NULL | NULL | CONTAINS | NOT_CONTAINS | BEGINS_WITH)
-        AttributeValueList: [{ S: 'STRING_VALUE' },],
-      },
-      // more conditions .....
-    }
+  var upsertParams = {
+    tableName: messageTable,
+    Item: {}
   };
 
-  dynamo.query(params, function (err, data) {
-    if (err)
-      console.log(JSON.stringify(err, null, 2));
-    else
-      console.log(JSON.stringify(data, null, 2));
-  });
+  var getParams = {
+    TableName: tableName,
+    Key: {
+      messageId: event.messageId
+    }
+  }
+
+  return; //NOT DONE YET
+
+  if (isNewMessage) {
+    // add message to db
+    dynamo.putItem(params, function (err, data) {
+      if (err) {
+        callback(err, null);
+      } else {
+        response = {
+          statusCode: 200,
+          body: JSON.stringify({
+            message: data
+          }),
+        };
+        callback(null, response);
+      }
+    });
+  } else {
+    //get original message
+    dynamo.getItem(getParams, function (err, data) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(data);
+        if (!data.Item) {
+          response = {
+            statusCode: 404,
+            body: JSON.stringify({
+              message: 'Message not found'
+            }),
+          };
+          callback(null, response);
+        } else {
+          var messageItem = formatMessageToUpdate(event.message, data)
+          response = updateMessage(messageItem, contextUserId, messageTable);
+          callback(null, response);
+        }
+      }
+    });
+  }
 };
 
-//validates the required properties of a task
-function validateTask(task)  {
-  if (task.priority == null || !task.description){
+//updates the message can be from originator or recipient
+function updateMessage(messageItem, contextUserId, messageTable) {
+
+  //proceed only if editor is originator or recipient has rights to edit
+  var canProceed = (contextUserId === messageItem.fromUserId || (messageItem.allowEdit && contextUserId === messageItem.toUserId));
+
+  if (!canProceed) {
+    response = {
+      statusCode: 401,
+      body: "user not authorized to edit message"
+    };
+    return response;
+  }
+
+  var params = {
+    TableName: messageTable,
+    Key: {
+      "messageId": messageItem.messageId
+    },
+    UpdateExpression: "set message = :m, updateDate=:d",
+    ExpressionAttributeValues: {
+      ":m": messageItem.message,
+      ":d": new Date().toISOString
+    },
+    ReturnValues: "UPDATED_NEW"
+  };
+
+  //update message
+  dynamo.updateItem(params, function (err, data) {
+    if (err) {
+      callback(err, null);
+    } else {
+      response = {
+        statusCode: 200,
+        body: JSON.stringify({
+          message: data
+        }),
+      };
+    }
+  });
+
+  //recpient edited message, notify source.
+  if (contextUserId === messageItem.fromUserId) {
+    //get email from ID & send email
+  }
+
+  return response;
+}
+
+//validates the properties of a task
+function validateTask(task) {
+  //required fields
+  if (task.priority == null || !task.description) {
     return (task.description) ? 'priority is required' : 'description is required'
   }
+
+  //validte completed as iso date
+  if (task.completed) {
+    //validate completed date
+    //ISO_6801 regex
+    var ISO_8601 = /^\d{4}(-\d\d(-\d\d(T\d\d:\d\d(:\d\d)?(\.\d+)?(([+-]\d\d:\d\d)|Z)?)?)?)?$/i
+    if (!ISO_8601.test(task.completed)) {
+      return "completed date is invalid";
+    }
+  }
+
+  //validate user field as email
+  if (task.user) {
+    var emailTest = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if (!emailTest.test(task.user)) {
+      return "email is invalid";
+    }
+  }
+
   return;
 };
 
-
 //Sort tasks by completed desc (blanks on top) THEN BY priority asc
 function sortTasks(tasks) {
-    tasks.sort(function(x, y) {
+  tasks.sort(function (x, y) {
     if (!x.completed && y.completed) {
       return -1
     } else if (x.completed && !y.completed) {
@@ -302,4 +409,44 @@ function sortTasks(tasks) {
   });
 
   return tasks;
-}
+};
+
+//prepare task to be safe for add/update
+function formatTaskToUpsert(task) {
+  var result = {
+    taskId: task.taskId,
+    user: task.user,
+    description: task.description
+  };
+
+  if (task.completed) {
+    result.completed = task.completed;
+  }
+
+  return result;
+};
+
+//input model = messageId (optional), message, toUserId, AllowEdit
+function formatMessageToAdd(messageItem, contextUserId) {
+  var utcNow = new Date().toISOString();
+  var result = {
+    messageId: messageItem.messageId,
+    message: messageItem.message,
+    toUserId: messageItem.toUserId,
+    fromUserId: contextUserId,
+    allowEdit: !!messageItem.allowEdit,
+    dateCreated: utcNow,
+    dateUpdated: utcNow
+  }
+};
+
+function formatMessageToUpdate(newMessageText, oldData) {
+  return {
+    messageId: oldData.messageId,
+    allowEdit: oldData.allowEdit,
+    toUserId: oldData.toUserId,
+    fromUserId: oldData.fromUserId,
+    message: newMessageText,
+    dateUpdated: new Date().toISOString()
+  };
+};

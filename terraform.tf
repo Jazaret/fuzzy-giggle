@@ -286,6 +286,7 @@ resource "aws_api_gateway_resource" "tasks-resource" {
   path_part = "tasks"
 }
 
+#Tasks/Get#
 resource "aws_api_gateway_method" "tasks-get" {
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
@@ -298,7 +299,7 @@ resource "aws_api_gateway_integration" "Fuzzy-Giggle-Integration" {
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-get.http_method}"
   type = "AWS"
-  integration_http_method = "POST"
+  integration_http_method = "GET"
   uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.getTasks_lambda.arn}/invocations"
   request_templates = {
      "application/json" = "${file("api_gateway_body_mapping.template")}"
@@ -319,6 +320,7 @@ resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationRespons
   http_method = "${aws_api_gateway_method.tasks-get.http_method}"
   status_code = "${aws_api_gateway_method_response.200.status_code}"
 }
+#End Tasks/Get#
 
 resource "aws_api_gateway_deployment" "Fuzzy-Giggle-Deployment" {
   depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Integration"]
