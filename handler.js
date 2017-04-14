@@ -359,7 +359,41 @@ function updateMessage(messageItem, contextUserId, messageTable) {
 
   //recpient edited message, notify source.
   if (contextUserId === messageItem.fromUserId) {
-    //get email from ID & send email
+    //todo: get email from ID
+    var ses = new aws.SES();
+    var emailAddress = "jazaret@gmail.com";
+
+    var emailParams = {
+      Destination: {
+        ToAddresses: [
+          emailAddress
+        ]
+      },
+      Message: {
+        Subject: {
+          Data: 'Your message was updated!',
+          Charset: 'UTF-8'
+        },
+        Body: {
+          Html: {
+            Data: 'Check it out your message was updated to say <br><br>' + messageItem.message,
+            Charset: 'UTF-8'
+          }
+        }
+      },
+      Source: 'Me <jazaret@gmail.com>',
+      ReplyToAddresses: [
+        'Me <jazaret@gmail.com>'
+      ]
+    };
+
+    ses.sendEmail(emailParams, function (err, data) {
+      if (err) {
+        console.log(err, err.stack);
+      } else {
+        console.log('success; ' + data);
+      }
+    });
   }
 
   return response;
