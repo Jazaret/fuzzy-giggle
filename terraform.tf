@@ -322,6 +322,114 @@ resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationRespons
 }
 #End Tasks/Get#
 
+#Tasks/Post#
+resource "aws_api_gateway_method" "tasks-post" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
+  http_method = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "Fuzzy-Giggle-Integration" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
+  http_method = "${aws_api_gateway_method.tasks-post.http_method}"
+  type = "AWS"
+  integration_http_method = "POST"
+  uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.addTask_lambda.arn}/invocations"
+  request_templates = {
+     "application/json" = "${file("api_gateway_body_mapping.template")}"
+  }
+}
+
+resource "aws_api_gateway_method_response" "200" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
+  http_method = "${aws_api_gateway_method.tasks-post.http_method}"
+  status_code = "200"
+}
+
+resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse" {
+  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Integration"]
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
+  http_method = "${aws_api_gateway_method.tasks-post.http_method}"
+  status_code = "${aws_api_gateway_method_response.200.status_code}"
+}
+#End Tasks/POST#
+
+#Tasks/PUT#
+resource "aws_api_gateway_method" "tasks-put" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
+  http_method = "PUT"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "Fuzzy-Giggle-Integration" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
+  http_method = "${aws_api_gateway_method.tasks-put.http_method}"
+  type = "AWS"
+  integration_http_method = "PUT"
+  uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.updateTask_lambda.arn}/invocations"
+  request_templates = {
+     "application/json" = "${file("api_gateway_body_mapping.template")}"
+  }
+}
+
+resource "aws_api_gateway_method_response" "200" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
+  http_method = "${aws_api_gateway_method.tasks-put.http_method}"
+  status_code = "200"
+}
+
+resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse" {
+  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Integration"]
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
+  http_method = "${aws_api_gateway_method.tasks-put.http_method}"
+  status_code = "${aws_api_gateway_method_response.200.status_code}"
+}
+#End Tasks/PUT#
+
+#Tasks/DELETE#
+resource "aws_api_gateway_method" "tasks-delete" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
+  http_method = "DELETE"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "Fuzzy-Giggle-Integration" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
+  http_method = "${aws_api_gateway_method.tasks-delete.http_method}"
+  type = "AWS"
+  integration_http_method = "DELETE"
+  uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.deleteTask_lambda.arn}/invocations"
+  request_templates = {
+     "application/json" = "${file("api_gateway_body_mapping.template")}"
+  }
+}
+
+resource "aws_api_gateway_method_response" "200" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
+  http_method = "${aws_api_gateway_method.tasks-delete.http_method}"
+  status_code = "200"
+}
+
+resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse" {
+  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Integration"]
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
+  http_method = "${aws_api_gateway_method.tasks-delete.http_method}"
+  status_code = "${aws_api_gateway_method_response.200.status_code}"
+}
+#End Tasks/DELETE#
+
 resource "aws_api_gateway_deployment" "Fuzzy-Giggle-Deployment" {
   depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Integration"]
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
