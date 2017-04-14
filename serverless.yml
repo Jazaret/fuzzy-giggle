@@ -53,6 +53,9 @@ functions:
 
   hello:
     handler: handler.hello
+  
+  upsertMessage:
+    handler: handler.upsertMessage
 
 
 resources:  
