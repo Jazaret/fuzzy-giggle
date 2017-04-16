@@ -30,6 +30,10 @@ module.exports.emailTasks = (event, context, callback) => {
     tasks.emailTasks(context);
 }
 
+module.exports.taskNotify = (event, context, callback) => {
+    tasks.taskNotify(event, context);
+}
+
 module.exports.hello = (event, context, callback) => {
     console.log('entering hello');
     callback(null, "finsihed hello");

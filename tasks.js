@@ -63,27 +63,18 @@ class Tasks {
 
     updateTask(task, callback) {
         var response, params;
-        var validateMsg = validateTask(task);
-        if (validateMsg) {
-            response = {
-                statusCode: 400,
-                body: validateMsg
-            };
-            callback(null, response);
-            return;
-        }
-        var newTask = modelTask(task);
+        var db = this.db;
+        var tableName = this.tableName;
 
         //GetItem to make sure it's an update
         params = {
-            TableName: this.tableName,
+            TableName: tableName,
             Key: {
-                taskId: newTask.taskId
-            },
-            AttributesToGet: ['taskId']
+                taskId: task.taskId
+            }
         };
 
-        this.db.getItem(params, function (err, data) {
+        db.getItem(params, function (err, data) {
             if (err) {
                 console.log(err);
             } else {
@@ -98,13 +89,13 @@ class Tasks {
                     callback(null, response);
                 } else {
                     //Item found, now update
-                    newTask.taskId = data.Item.taskId;
-                    var params = {
-                        Item: formatTaskToUpsert(newTask),
-                        TableName: this.tableName
+                    var newTask = mergeTasks(data.Item, task);
+                    var putParams = {
+                        Item: newTask,
+                        TableName: tableName
                     };
 
-                    this.db.putItem(params, function (err, data) {
+                    db.putItem(putParams, function (err, data) {
                         if (err) {
                             callback(err, null);
                         } else {
@@ -294,6 +285,48 @@ class Tasks {
         }
     };
 
+    taskNotify(newTask, context) {
+        //if current user is not the creator then email creator
+        if (false) {
+            context.succeed('No need to do anything');
+            return;
+        }
+
+        var params = {
+            Destination: {
+                ToAddresses: [
+                    'jazaret@gmail.com'
+                ]
+            },
+            Message: {
+                Subject: {
+                    Data: 'task subject',
+                    Charset: 'UTF-8'
+                },
+                Body: {
+                    Html: {
+                        Data: "TASK MODIFIED ALERT!",
+                        Charset: 'UTF-8'
+                    }
+                }
+            },
+            Source: 'Me <jazaret@gmail.com>',
+            ReplyToAddresses: [
+                'Me <jazaret@gmail.com>'
+            ]
+        };
+
+        this.mailer.sendEmail(params, function (err, data) {
+            if (err) {
+                console.log(err, err.stack);
+                context.fail('Internal Error on email:' + err.stack);
+            } else {
+                console.log('success;');
+                console.log(data);
+                context.succeed('email sent');
+            }
+        });
+    }
 }
 
 //validates the properties of a task
@@ -348,7 +381,8 @@ function formatTaskToUpsert(task) {
     var result = {
         taskId: task.taskId,
         user: task.user,
-        description: task.description
+        description: task.description,
+        priority: task.priority
     };
 
     if (task.completed) {
@@ -357,6 +391,24 @@ function formatTaskToUpsert(task) {
 
     return result;
 };
+
+//combine existing task with new task for update
+function mergeTasks(oldTask, newTask) {
+    var result = {
+        taskId: oldTask.taskId,
+        user: (newTask.user != null) ? newTask.user : oldTask.user,
+        description: (newTask.description) ? newTask.description : oldTask.description,
+        priority: (newTask.priority != null) ? newTask.priority : oldTask.priority
+    };
+
+    if (newTask.completed) {
+        result.completed = newTask.completed;
+    } else if (oldTask.completed) {
+        result.completed = oldTask.completed;
+    }
+    
+    return result;
+}
 
 //updates the message can be from originator or recipient
 function updateMessage(messageItem, contextUserId, messageTable, db, mailer) {
