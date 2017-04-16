@@ -1,7 +1,5 @@
 const uuid = require('node-uuid');
 
-
-
 class Tasks {
     constructor(db, tableName, mailer) {
         console.log('ses' + mailer);
@@ -235,6 +233,74 @@ class Tasks {
             }
         });
     };
+
+    //Method to handle messages to and from users.
+    //Creator of message can specify whether recipient has access to modify message
+    upsertMessage(incomingMessage, context, callback) {
+        console.log(context);
+        var response, message;
+        var contextUserId = (context.identity) ? context.identity.cognitoIdentityId : context.awsRequestId;
+        var messageTable = 'message-table';
+        var isNewMessage = !incomingMessage.messageId;
+
+        if (isNewMessage) {
+            message = formatMessageToAdd(incomingMessage);
+        }
+
+        var upsertParams = {
+            tableName: messageTable,
+            Item: {}
+        };
+
+        var getParams = {
+            TableName: tableName,
+            Key: {
+                messageId: incomingMessage.messageId
+            }
+        }
+
+        return; //NOT DONE YET
+
+        if (isNewMessage) {
+            // add message to db
+            this.db.putItem(params, function (err, data) {
+                if (err) {
+                    callback(err, null);
+                } else {
+                    response = {
+                        statusCode: 200,
+                        body: JSON.stringify({
+                            message: data
+                        }),
+                    };
+                    callback(null, response);
+                }
+            });
+        } else {
+            //get original message
+            this.db.getItem(getParams, function (err, data) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log(data);
+                    if (!data.Item) {
+                        response = {
+                            statusCode: 404,
+                            body: JSON.stringify({
+                                message: 'Message not found'
+                            }),
+                        };
+                        callback(null, response);
+                    } else {
+                        var messageItem = formatMessageToUpdate(incomingMessage.message, data)
+                        response = updateMessage(messageItem, contextUserId, messageTable, this.db, this.mailer);
+                        callback(null, response);
+                    }
+                }
+            });
+        }
+    };
+
 }
 
 //validates the properties of a task
@@ -298,5 +364,112 @@ function formatTaskToUpsert(task) {
 
     return result;
 };
+
+//updates the message can be from originator or recipient
+function updateMessage(messageItem, contextUserId, messageTable, db, mailer) {
+    //proceed only if editor is originator or recipient has rights to edit
+    var canProceed = (contextUserId === messageItem.fromUserId || (messageItem.allowEdit && contextUserId === messageItem.toUserId));
+
+    if (!canProceed) {
+        response = {
+            statusCode: 401,
+            body: "user not authorized to edit message"
+        };
+        return response;
+    }
+
+    var params = {
+        TableName: messageTable,
+        Key: {
+            "messageId": messageItem.messageId
+        },
+        UpdateExpression: "set message = :m, updateDate=:d",
+        ExpressionAttributeValues: {
+            ":m": messageItem.message,
+            ":d": new Date().toISOString
+        },
+        ReturnValues: "UPDATED_NEW"
+    };
+
+    //update message
+    db.updateItem(params, function (err, data) {
+        if (err) {
+            callback(err, null);
+        } else {
+            response = {
+                statusCode: 200,
+                body: JSON.stringify({
+                    message: data
+                }),
+            };
+        }
+    });
+
+    //recpient edited message, notify source.
+    if (contextUserId === messageItem.fromUserId) {
+        //todo: get email from ID
+        var emailAddress = "jazaret@gmail.com";
+
+        var emailParams = {
+            Destination: {
+                ToAddresses: [
+                    emailAddress
+                ]
+            },
+            Message: {
+                Subject: {
+                    Data: 'Your message was updated!',
+                    Charset: 'UTF-8'
+                },
+                Body: {
+                    Html: {
+                        Data: 'Check it out your message was updated to say <br><br>' + messageItem.message,
+                        Charset: 'UTF-8'
+                    }
+                }
+            },
+            Source: 'Me <jazaret@gmail.com>',
+            ReplyToAddresses: [
+                'Me <jazaret@gmail.com>'
+            ]
+        };
+
+        mailer.sendEmail(emailParams, function (err, data) {
+            if (err) {
+                console.log(err, err.stack);
+            } else {
+                console.log('success; ' + data);
+            }
+        });
+    }
+
+    return response;
+};
+
+//input model = messageId (optional), message, toUserId, AllowEdit
+function formatMessageToAdd(messageItem, contextUserId) {
+    var utcNow = new Date().toISOString();
+    var result = {
+        messageId: messageItem.messageId,
+        message: messageItem.message,
+        toUserId: messageItem.toUserId,
+        fromUserId: contextUserId,
+        allowEdit: !!messageItem.allowEdit,
+        dateCreated: utcNow,
+        dateUpdated: utcNow
+    }
+};
+
+function formatMessageToUpdate(newMessageText, oldData) {
+    return {
+        messageId: oldData.messageId,
+        allowEdit: oldData.allowEdit,
+        toUserId: oldData.toUserId,
+        fromUserId: oldData.fromUserId,
+        message: newMessageText,
+        dateUpdated: new Date().toISOString()
+    };
+};
+
 
 module.exports = Tasks;
