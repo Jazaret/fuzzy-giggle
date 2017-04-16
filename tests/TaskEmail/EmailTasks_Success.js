@@ -5,31 +5,13 @@ const Tasks = require('../../tasks');
 const taskList = [
     {
         user: "jazaret@gmail.com",
-        description: "Do something awesome",
+        description: "Do something awesome #1",
         priority: 0
     },
     {
         user: "jazaret@gmail.com",
-        description: "Do something awesome",
-        priority: 0,
-        completed: "2016-06-06T12:22:46-04:00"
-    },
-    {
-        user: "jazaret@gmail.com",
-        description: "Do something awesome",
+        description: "Do something awesome #2",
         priority: 1
-    },
-    {
-        user: "jazaret@gmail.com",
-        description: "Do something awesome",
-        priority: 2,
-        completed: "2016-07-06T12:22:46-04:00"
-    },
-    {
-        user: "jazaret@gmail.com",
-        description: "Do something awesome",
-        priority: 1,
-        completed: "2016-07-06T12:22:46-04:00"
     }
 ];
 

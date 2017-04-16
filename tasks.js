@@ -149,7 +149,6 @@ class Tasks {
         var tasksBody = 'Incomplete Tasks for you:';
 
         var emailsToSend = {};
-        console.log(emailsToSend);
         var uniqueNames = [];
 
         var params = {
@@ -201,8 +200,6 @@ class Tasks {
                     });
                 });
 
-                console.log(uniqueNames);
-
                 uniqueNames.forEach(function (value) {
                     var bodyMsg = 'Tasks to complete: <br><br>';
                     //set address
@@ -223,7 +220,8 @@ class Tasks {
                             console.log(err, err.stack);
                             context.fail('Internal Error on email:' + err.stack);
                         } else {
-                            console.log('success; ' + data);
+                            console.log('success;');
+                            console.log(data);
                         }
                     });
                 });
