@@ -29,3 +29,8 @@ module.exports.deleteTask = (event, context, callback) => {
 module.exports.emailTasks = (event, context, callback) => {
     tasks.emailTasks(context, callback);
 }
+
+module.exports.hello = (event, context, callback) => {
+    console.log('entering hello');
+    callback(null, "finsihed hello");
+}
