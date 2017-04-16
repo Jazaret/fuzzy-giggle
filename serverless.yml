@@ -18,44 +18,29 @@ functions:
     role: myRoleForGetTasks
     handler: handler.getTasks
     events:
-        - http: 
-            method: get
-            path: tasks
+        - http: GET tasks
   addTask:
       role: myRoleForAddTask
       handler: handler.addTask
       events:
-          - http: 
-              method: post
-              path: tasks
+        - http: POST tasks
   updateTask:
       role: myRoleForUpdateTask
       handler: handler.updateTask
       events:
-          - http: 
-              method: put
-              path: tasks  
+        - http: PUT tasks
   deleteTask:
       role: myRoleForDeleteTask
       handler: handler.deleteTask
       events:
-          - http: 
-              method: delete
-              path: tasks              
+        - http: DELETE tasks            
   emailTasks:
     role: myRoleForEmailTasks
     handler: handler.emailTasks
     events:
           - schedule: rate(24 hours)   
-
-  findTasksNotCompleted: 
-    handler: handler.findTasksNotCompleted
-
   hello:
     handler: handler.hello
-  
-  upsertMessage:
-    handler: handler.upsertMessage
 
 
 resources:  
