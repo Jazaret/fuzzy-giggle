@@ -30,7 +30,7 @@ class Tasks {
     addTask(task, callback) {
         var response;
         var newId = uuid.v1();
-        console.log('id = ' + newId);
+
         //todo: split required validation & invalid values validation
         var validateMsg = validateTask(task);
 
@@ -48,7 +48,6 @@ class Tasks {
             Item: formatTaskToUpsert(task),
             TableName: this.tableName
         };
-
         this.db.putItem(params, function (err, data) {
             if (err) {
                 callback(err, null);
@@ -145,7 +144,7 @@ class Tasks {
         });
     };
 
-    emailTasks(context, callback) {
+    emailTasks(context) {
         var mailer = this.mailer;
         var tasksBody = 'Incomplete Tasks for you:';
 

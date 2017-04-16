@@ -20,5 +20,9 @@
     "aws-sdk": "^2.41.0",
     "dynamodb-doc": "^1.0.0",
     "node-uuid": "^1.4.8"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "sinon": "^2.1.0"
   }
 }
