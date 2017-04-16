@@ -12,6 +12,11 @@ const taskList = [
         user: "jazaret@gmail.com",
         description: "Do something awesome #2",
         priority: 1
+    },
+    {
+        user: "jojo@gmail.com",
+        description: "Do something awesome #3",
+        priority: 1
     }
 ];
 
@@ -21,22 +26,28 @@ const db = {
     }
 };
 
-const mailer = {
-    mailSent: [],
-    sendEmail: function (params, callback) {
-        this.mailSent.push(params);
-        callback(null, params);
-    }
-}
-
-let tasks = new Tasks(db, null, mailer);
-
 describe('EmailTasks_Successful', function () {
     it('Email Tasks', function (done) {
+        const mailer = {
+            calls: 0,
+            sendEmail: function (params, callback) {
+                callback(null, params);
+
+                if (this.calls === 0) {                    
+                    expect(params.Destination.ToAddresses[0]).to.equal('jazaret@gmail.com');
+                } else {
+                    expect(params.Destination.ToAddresses[0]).to.equal('jojo@gmail.com');
+                    done();
+                }                
+                this.calls++;
+            }
+        }
+
+        let tasks = new Tasks(db, null, mailer);
+
         var context = {
             succeed: function (result) {
                 expect(result).to.equal('Jobs done');
-                done();
             },
             fail: function () {
                 done(new Error('never context.fail'));

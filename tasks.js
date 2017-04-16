@@ -2,8 +2,6 @@ const uuid = require('node-uuid');
 
 class Tasks {
     constructor(db, tableName, mailer) {
-        console.log('ses' + mailer);
-        console.log('table = ' + tableName);
         this.db = db;
         this.mailer = mailer;
         this.tableName = tableName
@@ -185,7 +183,6 @@ class Tasks {
                 console.log(err);
                 context.fail('Internal Error on read:' + err);
             } else {
-                console.log(data);
                 data.Items.forEach(function (value) {
                     //check if recipient already exists
                     if (!emailsToSend[value.user]) {
@@ -214,7 +211,6 @@ class Tasks {
 
                     params.Message.Body.Html.Data = bodyMsg;
                     // Send the email
-                    console.log('send email: ' + value + ' msg:' + bodyMsg);
                     mailer.sendEmail(params, function (err, data) {
                         if (err) {
                             console.log(err, err.stack);
