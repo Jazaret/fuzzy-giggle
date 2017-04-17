@@ -11,6 +11,13 @@ Features:
 * Sort Task List algorithm uses merge sort with worst case performance of O(n log n).
 * Unit tests included and written with mocha and chai
 
+Files:
+* handler.js        - main lambda entry point
+* tasks.js          - task logic for task methods
+* serverless.yml    - Serverless project settings file
+* terraform.tf      - Terraform project settings file
+* tests\*           - Test files
+
 Packages used:
 * aws-sdk
 * dynamodb-doc

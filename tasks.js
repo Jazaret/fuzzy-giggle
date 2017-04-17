@@ -7,6 +7,10 @@ class Tasks {
         this.tableName = tableName
     };
 
+
+    //Gets task list from database
+    //params:
+    //  callback - method called with list to return
     getTasks(callback) {
         var result, response;
         this.db.scan({ TableName: this.tableName }, function (err, data) {
@@ -25,6 +29,10 @@ class Tasks {
         });
     };
 
+    //Adds task to database
+    //params:
+    //  task - task to add
+    //  callback - method called after adding
     addTask(task, callback) {
         var response;
         var newId = uuid.v1();
@@ -61,6 +69,10 @@ class Tasks {
         });
     };
 
+    //Updates task on a database
+    //params:
+    //  task - task object to update - updates only changes
+    //  callback - method called with list to return
     updateTask(task, callback) {
         var response, params;
         var db = this.db;
@@ -114,6 +126,10 @@ class Tasks {
         return;
     };
 
+    //Deletes task on a database
+    //params:
+    //  taskId - task identifier
+    //  callback - method called with delete result
     deleteTask(taskId, callback) {
 
         var result, response;
@@ -133,6 +149,9 @@ class Tasks {
         });
     };
 
+    //Emails users with tasks yet to be completed
+    //params:
+    //  context - context to retrun method results
     emailTasks(context) {
         var mailer = this.mailer;
         var tasksBody = 'Incomplete Tasks for you:';
@@ -285,6 +304,10 @@ class Tasks {
         }
     };
 
+    //Notify user that task is created.
+    //params:
+    //  tasks - task list that method is using
+    //  context - context to retrun method results
     taskNotify(tasks, context) {
         forEach(tasks, function (task) {
             //if current user is not the creator then email creator
