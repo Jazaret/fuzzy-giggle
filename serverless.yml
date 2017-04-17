@@ -6,8 +6,6 @@ service: fuzzy-giggle
 provider:
   name: aws
   runtime: nodejs6.10
-  environment:
-    TABLE_NAME: tasks-table
 
 # you can overwrite defaults here
 #  stage: dev
@@ -24,53 +22,82 @@ package:
     - README.md
     - terraform.tf
     - swagger.json
-  include:
-    - src/function/handler.js  
 
 
 functions:
   getTasks:
     role: myRoleForGetTasks
-    handler: handler.getTasks
+    handler: handlerTasks.getTasks
+    environment:
+          TABLE_NAME: tasks-table
     events:
         - http: GET tasks
   addTask:
       role: myRoleForAddTask
-      handler: handler.addTask
+      handler: handlerTasks.addTask
+      environment:
+                TABLE_NAME: tasks-table
       events:
         - http: POST tasks
   updateTask:
       role: myRoleForUpdateTask
-      handler: handler.updateTask
+      handler: handlerTasks.updateTask
+      environment:
+                TABLE_NAME: tasks-table      
       events:
         - http: PUT tasks
   deleteTask:
       role: myRoleForDeleteTask
-      handler: handler.deleteTask
+      handler: handlerTasks.deleteTask
+      environment:
+                TABLE_NAME: tasks-table      
       events:
         - http: DELETE tasks            
   emailTasks:
-    role: myRoleForEmailTasks
-    handler: handler.emailTasks
-    events:
-          - schedule: rate(24 hours)   
-  taskNotify:
-    role: myRoleForTasksEmailDbTrigger
-    handler: handler.taskNotify
-    events:
+      role: myRoleForEmailTasks
+      handler: handlerTasks.emailTasks
+      environment:
+                TABLE_NAME: tasks-table      
+      events:
+            - schedule: rate(24 hours)   
+# Messages
+#######
+  getMessages:
+      role: myRoleForGetMesssages
+      handler: handlerMessages.getMessages
+      environment:
+                TABLE_NAME: messages-table      
+      events:
+            - http: GET messages
+  addMessage:
+      role: myRoleForUpdateMesssage
+      handler: handlerMessages.addMessage
+      environment:
+                TABLE_NAME: messages-table            
+      events:
+          - http: POST messages
+  updateMessage:
+      role: myRoleForUpdateMesssage
+      handler: handlerMessages.addMessage
+      environment:
+                TABLE_NAME: messages-table          
+      events:
+        - http: PUT messages      
+  triggerMessagesNotify:
+      role: myRoleForMessagesEmailDbTrigger
+      handler: handlerMessages.triggerMessagesNotify
+      environment:
+                TABLE_NAME: messages-table      
+      events:
 #          - stream:
-#            arn: arn:aws:dynamodb:us-east-1:918902313573:table/tasks-table/stream/2017-04-17T12:53:37.913
+#            arn: arn:aws:dynamodb:us-east-1:918902313573:table/messages-table/stream/2017-04-17T12:53:37.913
 #            batchSize: 1
 #            startingPosition: LATEST
 #            enabled: true
 
-  hello:
-    handler: handler.hello
-      
-
 resources:  
   Resources:
-    DynamoDbTable:
+    DynamoDbTableTasks:
       Type: AWS::DynamoDB::Table
       Properties:
         TableName: tasks-table
@@ -84,21 +111,22 @@ resources:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5       
         StreamSpecification:
-                  StreamViewType: NEW_AND_OLD_IMAGES              
-    DynamoDBIamPolicy:
-      Type: AWS::IAM::Policy
-      DependsOn: DynamoDbTable
+                  StreamViewType: NEW_AND_OLD_IMAGES    
+    DynamoDbTableMessages:
+      Type: AWS::DynamoDB::Table
       Properties:
-        PolicyName: lambda-dynamodb
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Action:
-                - dynamodb:*
-              Resource: arn:aws:dynamodb:*:*:table/tasks-table
-        Roles:
-          - Ref: IamRoleLambdaExecution
+        TableName: messages-table
+        AttributeDefinitions:
+          - AttributeName: messageId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: messageId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5       
+        StreamSpecification:
+                  StreamViewType: NEW_AND_OLD_IMAGES                               
     myRoleForGetTasks:
       Type: AWS::IAM::Role
       Properties:
@@ -260,7 +288,68 @@ resources:
                   Action:
                     - ses:SendEmail
                   Resource: '*'
-    myRoleForTasksEmailDbTrigger:
+    myRoleForGetMesssages:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: policyForLogs
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: arn:aws:logs:*:*:log-group:/aws/lambda/*:*:*      
+          - PolicyName: myPolicyForUpdateMessage
+            PolicyDocument: 
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                      - dynamodb:Scan
+                  Resource: arn:aws:dynamodb:*:*:table/messages-table                                                
+    myRoleForUpdateMesssage:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: policyForLogs
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: arn:aws:logs:*:*:log-group:/aws/lambda/*:*:*      
+          - PolicyName: myPolicyForUpdateMessage
+            PolicyDocument: 
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                      - dynamodb:GetItem
+                      - dynamodb:PutItem
+                  Resource: arn:aws:dynamodb:*:*:table/messages-table                      
+    myRoleForMessagesEmailDbTrigger:
       Type: AWS::IAM::Role
       Properties:
         AssumeRolePolicyDocument:
