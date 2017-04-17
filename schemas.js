@@ -4,7 +4,7 @@ schemas = {
     task: {
         taskId: null,
         user: null,
-        comment: null,
+        description: null,
         priority: null,
         completed: null
     }

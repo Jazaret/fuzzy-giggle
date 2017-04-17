@@ -51,8 +51,9 @@ class Tasks {
         }
 
         task.taskId = newId;
+        task = sanitizeTask(task);
         var params = {
-            Item: sanitizeTask(task),
+            Item: task,
             TableName: this.tableName
         };
         this.db.putItem(params, function (err, data) {
@@ -62,7 +63,7 @@ class Tasks {
                 response = {
                     statusCode: 200,
                     body: JSON.stringify({
-                        message: data
+                        message: task
                     }),
                 };
                 callback(null, response);
