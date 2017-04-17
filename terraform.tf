@@ -7,6 +7,20 @@ provider "aws" {
   profile                  = "default"
 }
 
+
+#Create DynamoDb Table
+####
+resource "aws_dynamodb_table" "dynamodb-table" {
+    name = "tasks-table"
+    read_capacity = 5
+    write_capacity = 5
+    hash_key = "taskId"
+    attribute {
+      name = "taskId"
+      type = "S"
+    }
+}
+
 #Create Roles
 ####
 resource "aws_iam_role" "iam_for__getTasks_lambda_and_api" {
@@ -85,7 +99,7 @@ resource "aws_iam_role" "iam_for__deleteTask_lambda_and_api" {
 EOF
 }
 
-resource "aws_iam_role" "iam_for_emailTasks_lambda_and_api" {
+resource "aws_iam_role" "iam_for__emailTasks_lambda_and_api" {
     name = "iam_for_lambda_and_api"
     assume_role_policy = <<EOF
 {
@@ -123,7 +137,7 @@ resource "aws_iam_policy" "policy_for_readDB" {
         "dynamodb:Scan"
       ],
       "Resource": [
-        "arn:aws:dynamodb:us-west-2:918902313573:table/tasks"
+        "arn:aws:dynamodb:us-west-2:918902313573:table/${aws_dynamodb_table.dynamodb-table.name}"
       ]
     }
   ]
@@ -147,7 +161,7 @@ resource "aws_iam_policy" "policy_for_updateDB" {
         "dynamodb:UpdateItem"
       ],
       "Resource": [
-        "arn:aws:dynamodb:us-west-2:918902313573:table/tasks"
+        "arn:aws:dynamodb:us-west-2:918902313573:table/${aws_dynamodb_table.dynamodb-table.name}"
       ]
     }
   ]
@@ -170,7 +184,7 @@ resource "aws_iam_policy" "policy_for_deleteItemDB" {
 		"dynamodb:DeleteItem"
       ],
       "Resource": [
-        "arn:aws:dynamodb:us-west-2:918902313573:table/tasks"
+        "arn:aws:dynamodb:us-west-2:918902313573:table/${aws_dynamodb_table.dynamodb-table.name}"
       ]
     }
   ]
@@ -187,7 +201,7 @@ resource "aws_iam_policy_attachment" "attach-lambda-policy" {
 		"${aws_iam_role.iam_for__addTask_lambda_and_api.name}",
 		"${aws_iam_role.iam_for__updateTask_lambda_and_api.name}",
 		"${aws_iam_role.iam_for__deleteTask_lambda_and_api.name}",
-		"${aws_iam_role.iam_for_emailTasks_lambda_and_api.name}"
+		"${aws_iam_role.iam_for__emailTasks_lambda_and_api.name}"
 		]
     policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
@@ -199,7 +213,7 @@ resource "aws_iam_policy_attachment" "attach-ddb-read-policy" {
 		"${aws_iam_role.iam_for__addTask_lambda_and_api.name}",
 		"${aws_iam_role.iam_for__updateTask_lambda_and_api.name}",
 		"${aws_iam_role.iam_for__deleteTask_lambda_and_api.name}",
-		"${aws_iam_role.iam_for_emailTasks_lambda_and_api.name}"
+		"${aws_iam_role.iam_for__emailTasks_lambda_and_api.name}"
 	]
     policy_arn = "${aws_iam_policy.policy_for_readDB.arn}"
 }
@@ -231,6 +245,11 @@ resource "aws_lambda_function" "getTasks_lambda" {
     source_code_hash = "${base64sha256(file("fuzzy-giggle.zip"))}"
     timeout = 60
     runtime = "nodejs6.10"
+    environment {
+      variables = {
+        TABLE_NAME = "tasks-table"
+      }
+    }
 }
 
 resource "aws_lambda_function" "addTask_lambda" {
@@ -241,6 +260,11 @@ resource "aws_lambda_function" "addTask_lambda" {
     source_code_hash = "${base64sha256(file("fuzzy-giggle.zip"))}"
     timeout = 60
     runtime = "nodejs6.10"
+    environment {
+      variables = {
+        TABLE_NAME = "tasks-table"
+      }
+    }
 }
 
 resource "aws_lambda_function" "updateTask_lambda" {
@@ -251,6 +275,11 @@ resource "aws_lambda_function" "updateTask_lambda" {
     source_code_hash = "${base64sha256(file("fuzzy-giggle.zip"))}"
     timeout = 60
     runtime = "nodejs6.10"
+    environment {
+      variables = {
+        TABLE_NAME = "tasks-table"
+      }
+    }
 }
 
 resource "aws_lambda_function" "deleteTask_lambda" {
@@ -261,6 +290,11 @@ resource "aws_lambda_function" "deleteTask_lambda" {
     source_code_hash = "${base64sha256(file("fuzzy-giggle.zip"))}"
     timeout = 60
     runtime = "nodejs6.10"
+    environment {
+      variables = {
+        TABLE_NAME = "tasks-table"
+      }
+    }
 }
 
 resource "aws_lambda_function" "emailTasks_lambda" {
@@ -271,6 +305,11 @@ resource "aws_lambda_function" "emailTasks_lambda" {
     source_code_hash = "${base64sha256(file("fuzzy-giggle.zip"))}"
     timeout = 60
     runtime = "nodejs6.10"
+    environment {
+      variables = {
+        TABLE_NAME = "tasks-table"
+      }
+    }
 }
 
 #Create API Gateway
@@ -294,31 +333,28 @@ resource "aws_api_gateway_method" "tasks-get" {
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "Fuzzy-Giggle-Integration" {
+resource "aws_api_gateway_integration" "Fuzzy-Giggle-GET-Integration" {
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-get.http_method}"
   type = "AWS"
   integration_http_method = "GET"
   uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.getTasks_lambda.arn}/invocations"
-  request_templates = {
-     "application/json" = "${file("api_gateway_body_mapping.template")}"
-  }
 }
 
-resource "aws_api_gateway_method_response" "200" {
+resource "aws_api_gateway_method_response" "200-get" {
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-get.http_method}"
   status_code = "200"
 }
 
-resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse" {
-  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Integration"]
+resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse-Get" {
+  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-GET-Integration"]
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-get.http_method}"
-  status_code = "${aws_api_gateway_method_response.200.status_code}"
+  status_code = "${aws_api_gateway_method_response.200-get.status_code}"
 }
 #End Tasks/Get#
 
@@ -330,31 +366,28 @@ resource "aws_api_gateway_method" "tasks-post" {
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "Fuzzy-Giggle-Integration" {
+resource "aws_api_gateway_integration" "Fuzzy-Giggle-Post-Integration" {
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-post.http_method}"
   type = "AWS"
   integration_http_method = "POST"
   uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.addTask_lambda.arn}/invocations"
-  request_templates = {
-     "application/json" = "${file("api_gateway_body_mapping.template")}"
-  }
 }
 
-resource "aws_api_gateway_method_response" "200" {
+resource "aws_api_gateway_method_response" "200-post" {
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-post.http_method}"
   status_code = "200"
 }
 
-resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse" {
-  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Integration"]
+resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse-Post" {
+  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Post-Integration"]
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-post.http_method}"
-  status_code = "${aws_api_gateway_method_response.200.status_code}"
+  status_code = "${aws_api_gateway_method_response.200-post.status_code}"
 }
 #End Tasks/POST#
 
@@ -366,31 +399,28 @@ resource "aws_api_gateway_method" "tasks-put" {
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "Fuzzy-Giggle-Integration" {
+resource "aws_api_gateway_integration" "Fuzzy-Giggle-Put-Integration" {
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-put.http_method}"
   type = "AWS"
   integration_http_method = "PUT"
   uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.updateTask_lambda.arn}/invocations"
-  request_templates = {
-     "application/json" = "${file("api_gateway_body_mapping.template")}"
-  }
 }
 
-resource "aws_api_gateway_method_response" "200" {
+resource "aws_api_gateway_method_response" "200-put" {
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-put.http_method}"
   status_code = "200"
 }
 
-resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse" {
-  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Integration"]
+resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse-Put" {
+  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Put-Integration"]
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-put.http_method}"
-  status_code = "${aws_api_gateway_method_response.200.status_code}"
+  status_code = "${aws_api_gateway_method_response.200-put.status_code}"
 }
 #End Tasks/PUT#
 
@@ -402,49 +432,27 @@ resource "aws_api_gateway_method" "tasks-delete" {
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "Fuzzy-Giggle-Integration" {
+resource "aws_api_gateway_integration" "Fuzzy-Giggle-Delete-Integration" {
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-delete.http_method}"
   type = "AWS"
   integration_http_method = "DELETE"
   uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.deleteTask_lambda.arn}/invocations"
-  request_templates = {
-     "application/json" = "${file("api_gateway_body_mapping.template")}"
-  }
 }
 
-resource "aws_api_gateway_method_response" "200" {
+resource "aws_api_gateway_method_response" "200-delete" {
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-delete.http_method}"
   status_code = "200"
 }
 
-resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse" {
-  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Integration"]
+resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse-Delete" {
+  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Delete-Integration"]
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-delete.http_method}"
-  status_code = "${aws_api_gateway_method_response.200.status_code}"
+  status_code = "${aws_api_gateway_method_response.200-delete.status_code}"
 }
 #End Tasks/DELETE#
-
-resource "aws_api_gateway_deployment" "Fuzzy-Giggle-Deployment" {
-  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Integration"]
-  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
-  stage_name = "dev"
-}
-
-#Create DynamoDb Table
-####
-resource "aws_dynamodb_table" "dynamodb-table" {
-    name = "tasks-table"
-    read_capacity = 5
-    write_capacity = 5
-    hash_key = "taskId"
-    attribute {
-      name = "taskId"
-      type = "S"
-    }
-}

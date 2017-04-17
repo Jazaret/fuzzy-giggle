@@ -8,3 +8,8 @@ jspm_packages
 # VS Code
 .vscode
 /.vs
+
+# Terraform files
+terraform.tfstate
+terraform.tfstate.backup
+fuzzy-giggle.zip
