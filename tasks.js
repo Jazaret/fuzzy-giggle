@@ -37,8 +37,8 @@ class Tasks {
     addTask(task, callback) {
         var response;
         var newId = uuid.v1();
+        task.taskId = newId;
 
-        //todo: split required validation & invalid values validation
         var validateMsg = validateTask(task);
 
         if (validateMsg) {
@@ -50,7 +50,6 @@ class Tasks {
             return;
         }
 
-        task.taskId = newId;
         task = sanitizeTask(task);
         var params = {
             Item: task,
@@ -103,6 +102,18 @@ class Tasks {
                 } else {
                     //Item found, now update
                     var newTask = mergeTasks(data.Item, task);
+
+                    var validateMsg = validateTask(newTask);
+
+                    if (validateMsg) {
+                        response = {
+                            statusCode: 405,
+                            body: validateMsg
+                        };
+                        callback(null, response);
+                        return;
+                    }
+
                     var putParams = {
                         Item: newTask,
                         TableName: tableName
@@ -372,6 +383,11 @@ function validateTask(task) {
         return (task.description) ? 'priority is required' : 'description is required'
     }
 
+    //validate priority digit 0-9
+    if (String(+task.priority).charAt(0) != task.priority) {
+        return "priority is invalid";
+    }
+
     //validte completed as iso date
     if (task.completed) {
         //validate completed date
@@ -386,7 +402,7 @@ function validateTask(task) {
     if (task.user) {
         var emailTest = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         if (!emailTest.test(task.user)) {
-            return "email is invalid";
+            return "user is invalid";
         }
     }
 
