@@ -285,47 +285,50 @@ class Tasks {
         }
     };
 
-    taskNotify(newTask, context) {
-        //if current user is not the creator then email creator
-        if (false) {
-            context.succeed('No need to do anything');
-            return;
-        }
-
-        var params = {
-            Destination: {
-                ToAddresses: [
-                    'jazaret@gmail.com'
-                ]
-            },
-            Message: {
-                Subject: {
-                    Data: 'task subject',
-                    Charset: 'UTF-8'
-                },
-                Body: {
-                    Html: {
-                        Data: "TASK MODIFIED ALERT!",
-                        Charset: 'UTF-8'
-                    }
-                }
-            },
-            Source: 'Me <jazaret@gmail.com>',
-            ReplyToAddresses: [
-                'Me <jazaret@gmail.com>'
-            ]
-        };
-
-        this.mailer.sendEmail(params, function (err, data) {
-            if (err) {
-                console.log(err, err.stack);
-                context.fail('Internal Error on email:' + err.stack);
-            } else {
-                console.log('success;');
-                console.log(data);
-                context.succeed('email sent');
+    taskNotify(tasks, context) {
+        forEach(tasks, function (task) {
+            //if current user is not the creator then email creator
+            if (false) {
+                context.succeed('No need to do anything');
+                return;
             }
+
+            var params = {
+                Destination: {
+                    ToAddresses: [
+                        'jazaret@gmail.com'
+                    ]
+                },
+                Message: {
+                    Subject: {
+                        Data: 'task subject',
+                        Charset: 'UTF-8'
+                    },
+                    Body: {
+                        Html: {
+                            Data: "TASK MODIFIED ALERT!",
+                            Charset: 'UTF-8'
+                        }
+                    }
+                },
+                Source: 'Me <jazaret@gmail.com>',
+                ReplyToAddresses: [
+                    'Me <jazaret@gmail.com>'
+                ]
+            };
+
+            this.mailer.sendEmail(params, function (err, data) {
+                if (err) {
+                    console.log(err, err.stack);
+                    context.fail('Internal Error on email:' + err.stack);
+                } else {
+                    console.log('success;');
+                    console.log(data);
+                }
+            });
         });
+
+        context.succeed('Notifications sent');
     }
 }
 
@@ -406,7 +409,7 @@ function mergeTasks(oldTask, newTask) {
     } else if (oldTask.completed) {
         result.completed = oldTask.completed;
     }
-    
+
     return result;
 }
 

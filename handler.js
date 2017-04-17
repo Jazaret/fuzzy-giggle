@@ -31,7 +31,7 @@ module.exports.emailTasks = (event, context, callback) => {
 }
 
 module.exports.taskNotify = (event, context, callback) => {
-    tasks.taskNotify(event, context);
+    tasks.taskNotify(event.Records, context);
 }
 
 module.exports.hello = (event, context, callback) => {
