@@ -16,11 +16,11 @@ Files:
 * tasks.js          - task logic for task methods
 * serverless.yml    - Serverless project settings file
 * terraform.tf      - Terraform project settings file
-* tests\*           - Test files
+* tests/*           - Test files
 
 Packages used:
 * aws-sdk
 * dynamodb-doc
 * node-uuid
 * chai
-* mocah (global install)
+* mocha (global install)
