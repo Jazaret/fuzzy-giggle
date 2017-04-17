@@ -14,6 +14,7 @@ Features:
 Files:
 * handler.js        - main lambda entry point
 * tasks.js          - task logic for task methods
+* schemas.js        - model schemas (task model)
 * serverless.yml    - Serverless project settings file
 * terraform.tf      - Terraform project settings file
 * tests/*           - Test files

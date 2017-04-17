@@ -1,4 +1,6 @@
 const uuid = require('node-uuid');
+const schemas = require("./schemas.js");
+const _ = require("lodash");
 
 class Tasks {
     constructor(db, tableName, mailer) {
@@ -6,7 +8,6 @@ class Tasks {
         this.mailer = mailer;
         this.tableName = tableName
     };
-
 
     //Gets task list from database
     //params:
@@ -51,7 +52,7 @@ class Tasks {
 
         task.taskId = newId;
         var params = {
-            Item: formatTaskToUpsert(task),
+            Item: sanitizeTask(task),
             TableName: this.tableName
         };
         this.db.putItem(params, function (err, data) {
@@ -88,9 +89,8 @@ class Tasks {
 
         db.getItem(params, function (err, data) {
             if (err) {
-                console.log(err);
+                callback(err, null);
             } else {
-                console.log(data);
                 if (!data.Item) {
                     response = {
                         statusCode: 404,
@@ -226,8 +226,7 @@ class Tasks {
                             console.log(err, err.stack);
                             context.fail('Internal Error on email:' + err.stack);
                         } else {
-                            console.log('success;');
-                            console.log(data);
+                            console.log('email sent to ' + value);
                         }
                     });
                 });
@@ -283,7 +282,7 @@ class Tasks {
             //get original message
             this.db.getItem(getParams, function (err, data) {
                 if (err) {
-                    console.log(err);
+                    callback(err, null);
                 } else {
                     console.log(data);
                     if (!data.Item) {
@@ -353,6 +352,15 @@ class Tasks {
 
         context.succeed('Notifications sent');
     }
+
+
+}
+
+//keeps only variables that are in the task schema
+function sanitizeTask(data) {
+    data = data || {};
+    schema = schemas.task;
+    return _.pick(_.defaults(data, schema), _.keys(schema));
 }
 
 //validates the properties of a task
@@ -400,22 +408,6 @@ function sortTasks(tasks) {
     });
 
     return tasks;
-};
-
-//prepare task to be safe for add/update
-function formatTaskToUpsert(task) {
-    var result = {
-        taskId: task.taskId,
-        user: task.user,
-        description: task.description,
-        priority: task.priority
-    };
-
-    if (task.completed) {
-        result.completed = task.completed;
-    }
-
-    return result;
 };
 
 //combine existing task with new task for update
