@@ -2,7 +2,7 @@ variable "region" {
     default = "us-west-2"
 }
 variable "accountid" {
-    default = "${var.accountid}"
+    default = "918902313573"
 }
     
 provider "aws" {
@@ -291,7 +291,7 @@ resource "aws_lambda_function" "getMessages_lambda" {
     }
 }
 
-resource "aws_lambda_function" "addMessages_lambda" {
+resource "aws_lambda_function" "addMessage_lambda" {
     filename = "fuzzy-giggle.zip"
     function_name = "addMessage"
     role = "${aws_iam_role.iam_terraform_for_lambda_addMessage.arn}"
@@ -349,15 +349,12 @@ resource "aws_lambda_event_source_mapping" "event_source_mapping_messagesNotify"
 #
 
 #############################
-# AP AYAYAY                 #
+# API                       #
 #############################
-# Now, we need an API to expose those functions publicly
 resource "aws_api_gateway_rest_api" "fuzzy_giggle_api" {
-  name = "Task and Messages"
+  name = "fuzzy_giggle_api"
 }
 
-# The API requires at least one "endpoint", or "resource" in AWS terminology.
-# The endpoint created here is: /task
 resource "aws_api_gateway_resource" "tasks-resource" {
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   parent_id   = "${aws_api_gateway_rest_api.fuzzy_giggle_api.root_resource_id}"
@@ -372,11 +369,11 @@ resource "aws_api_gateway_method" "tasks-get" {
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "Fuzzy-Giggle-GET-Integration" {
+resource "aws_api_gateway_integration" "Fuzzy-Giggle-GET-Integration-Tasks" {
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-get.http_method}"
-  type = "AWS"
+  type = "AWS_PROXY"
   integration_http_method = "GET"
   uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.getTasks_lambda.arn}/invocations"
 }
@@ -388,8 +385,8 @@ resource "aws_api_gateway_method_response" "200-get" {
   status_code = "200"
 }
 
-resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse-Get" {
-  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-GET-Integration"]
+resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse-Get-Task" {
+  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-GET-Integration-Tasks"]
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-get.http_method}"
@@ -401,7 +398,7 @@ resource "aws_lambda_permission" "allow_api_gateway_get" {
     statement_id = "AllowExecutionFromApiGatewayForGet"
     action = "lambda:InvokeFunction"
     principal = "apigateway.amazonaws.com"
-    source_arn = "arn:aws:execute-api:${var.region}:${var.accountid}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*"
+    source_arn = "arn:aws:execute-api:${var.region}:${var.accountid}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*/"
 }
 #End Tasks/Get#
 
@@ -413,11 +410,11 @@ resource "aws_api_gateway_method" "tasks-post" {
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "Fuzzy-Giggle-Post-Integration" {
+resource "aws_api_gateway_integration" "Fuzzy-Giggle-Post-Integration-Task" {
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-post.http_method}"
-  type = "AWS"
+  type = "AWS_PROXY"
   integration_http_method = "POST"
   uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.addTask_lambda.arn}/invocations"
 }
@@ -429,8 +426,8 @@ resource "aws_api_gateway_method_response" "200-post" {
   status_code = "200"
 }
 
-resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse-Post" {
-  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Post-Integration"]
+resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse-Post-Task" {
+  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Post-Integration-Task"]
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-post.http_method}"
@@ -454,11 +451,11 @@ resource "aws_api_gateway_method" "tasks-put" {
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "Fuzzy-Giggle-Put-Integration" {
+resource "aws_api_gateway_integration" "Fuzzy-Giggle-Put-Integration-Task" {
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-put.http_method}"
-  type = "AWS"
+  type = "AWS_PROXY"
   integration_http_method = "PUT"
   uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.updateTask_lambda.arn}/invocations"
 }
@@ -470,8 +467,8 @@ resource "aws_api_gateway_method_response" "200-put" {
   status_code = "200"
 }
 
-resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse-Put" {
-  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Put-Integration"]
+resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse-Put-Task" {
+  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Put-Integration-Task"]
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-put.http_method}"
@@ -495,11 +492,11 @@ resource "aws_api_gateway_method" "tasks-delete" {
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "Fuzzy-Giggle-Delete-Integration" {
+resource "aws_api_gateway_integration" "Fuzzy-Giggle-Delete-Integration-Task" {
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-delete.http_method}"
-  type = "AWS"
+  type = "AWS_PROXY"
   integration_http_method = "DELETE"
   uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.deleteTask_lambda.arn}/invocations"
 }
@@ -511,8 +508,8 @@ resource "aws_api_gateway_method_response" "200-delete" {
   status_code = "200"
 }
 
-resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse-Delete" {
-  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Delete-Integration"]
+resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse-Delete-Task" {
+  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Delete-Integration-Task"]
   rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-delete.http_method}"
@@ -526,3 +523,136 @@ resource "aws_lambda_permission" "allow_api_gateway_delete" {
     source_arn = "arn:aws:execute-api:${var.region}:${var.accountid}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*"
 }
 #End Tasks/DELETE#
+
+
+# Messasges path
+######
+
+resource "aws_api_gateway_resource" "messages-resource" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  parent_id   = "${aws_api_gateway_rest_api.fuzzy_giggle_api.root_resource_id}"
+  path_part   = "messages"
+}
+
+#messages/Get#
+resource "aws_api_gateway_method" "messages-get" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.messages-resource.id}"
+  http_method = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "Fuzzy-Giggle-GET-Integration-messages" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.messages-resource.id}"
+  http_method = "${aws_api_gateway_method.messages-get.http_method}"
+  type = "AWS_PROXY"
+  integration_http_method = "GET"
+  uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.getMessages_lambda.arn}/invocations"
+}
+
+resource "aws_api_gateway_method_response" "200-get-messages" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.messages-resource.id}"
+  http_method = "${aws_api_gateway_method.messages-get.http_method}"
+  status_code = "200"
+}
+
+resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse-Get-Message" {
+  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-GET-Integration-messages"]
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.messages-resource.id}"
+  http_method = "${aws_api_gateway_method.messages-get.http_method}"
+  status_code = "${aws_api_gateway_method_response.200-get-messages.status_code}"
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_get_messages" {
+    function_name = "${aws_lambda_function.getMessages_lambda.function_name}"
+    statement_id = "AllowExecutionFromApiGatewayForGetMessages"
+    action = "lambda:InvokeFunction"
+    principal = "apigateway.amazonaws.com"
+    source_arn = "arn:aws:execute-api:${var.region}:${var.accountid}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*/"
+}
+#End messages/Get#
+
+#messages/Post#
+resource "aws_api_gateway_method" "messages-post" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.messages-resource.id}"
+  http_method = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "Fuzzy-Giggle-Post-Integration-messages" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.messages-resource.id}"
+  http_method = "${aws_api_gateway_method.messages-post.http_method}"
+  type = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.addMessage_lambda.arn}/invocations"
+}
+
+resource "aws_api_gateway_method_response" "200-post-messages" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.messages-resource.id}"
+  http_method = "${aws_api_gateway_method.messages-post.http_method}"
+  status_code = "200"
+}
+
+resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse-Post-Message" {
+  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Post-Integration-messages"]
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.messages-resource.id}"
+  http_method = "${aws_api_gateway_method.messages-post.http_method}"
+  status_code = "${aws_api_gateway_method_response.200-post-messages.status_code}"
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_post_messages" {
+    function_name = "${aws_lambda_function.addMessage_lambda.function_name}"
+    statement_id = "AllowExecutionFromApiGatewayForPostMessages"
+    action = "lambda:InvokeFunction"
+    principal = "apigateway.amazonaws.com"
+    source_arn = "arn:aws:execute-api:${var.region}:${var.accountid}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*"
+}
+#End messages/POST#
+
+#messages/PUT#
+resource "aws_api_gateway_method" "messages-put" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.messages-resource.id}"
+  http_method = "PUT"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "Fuzzy-Giggle-Put-Integration-messages" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.messages-resource.id}"
+  http_method = "${aws_api_gateway_method.messages-put.http_method}"
+  type = "AWS_PROXY"
+  integration_http_method = "PUT"
+  uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.updateMessage_lambda.arn}/invocations"
+}
+
+resource "aws_api_gateway_method_response" "200-put-messages" {
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.messages-resource.id}"
+  http_method = "${aws_api_gateway_method.messages-put.http_method}"
+  status_code = "200"
+}
+
+resource "aws_api_gateway_integration_response" "Fuzzy-Giggle-IntegrationResponse-Put-Message" {
+  depends_on = ["aws_api_gateway_integration.Fuzzy-Giggle-Put-Integration-messages"]
+  rest_api_id = "${aws_api_gateway_rest_api.fuzzy_giggle_api.id}"
+  resource_id = "${aws_api_gateway_resource.messages-resource.id}"
+  http_method = "${aws_api_gateway_method.messages-put.http_method}"
+  status_code = "${aws_api_gateway_method_response.200-put-messages.status_code}"
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_put_messages" {
+    function_name = "${aws_lambda_function.updateMessage_lambda.function_name}"
+    statement_id = "AllowExecutionFromApiGatewayForPut"
+    action = "lambda:InvokeFunction"
+    principal = "apigateway.amazonaws.com"
+    source_arn = "arn:aws:execute-api:${var.region}:${var.accountid}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*"
+}
+#End messages/PUT#

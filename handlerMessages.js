@@ -18,15 +18,18 @@ module.exports.getMessages = (event, context, callback) => {
 
 module.exports.addMessage = (event, context, callback) => {    
     console.log(JSON.stringify(context));
-    var contextUserId = 'jazaret@gmail.com';   //context.identity
+    //todo - use cognito for identity user context if possible
+    var contextUserId = event.contextUserId || 'jazaret@gmail.com';
     messages.addMessage(event, contextUserId, callback);
 }
 
 module.exports.updateMessage = (event, context, callback) => {
-    var contextUserId = 'j.azaret@gmail.com';   //context.identity
+    //todo - use cognito for identity user context if possible
+    var contextUserId = event.contextUserId || 'jazaret@gmail.com';
     messages.updateMessage(event, contextUserId, callback);
 }
 
 module.exports.triggerMessagesNotify = (event, context, callback) => {
+    console.log(JSON.stringify(event))
     messages.triggerMessagesNotify(event.Records, context);
 }

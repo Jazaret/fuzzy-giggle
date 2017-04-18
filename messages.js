@@ -38,6 +38,17 @@ class Messages {
         message = formatMessageToAdd(incomingMessage, contextUserId);
         message = sanitizeMessage(message);
 
+        var validateMsg = validateMessage(message);
+
+        if (validateMsg) {
+            response = {
+                statusCode: 405,
+                body: validateMsg
+            };
+            callback(null, response);
+            return;
+        }
+
         var params = {
             Item: message,
             TableName: this.tableName
@@ -150,6 +161,34 @@ function sanitizeMessage(data) {
     return _.pick(_.defaults(data, schema), _.keys(schema));
 }
 
+//validates the properties of a message
+function validateMessage(message) {
+
+    //required fields
+    if (!message.message) {
+        'message is required';
+    }
+
+    if (!message.toUserId) {
+        return 'toUserId is required';
+    }
+
+    if (!message.contextUserId) {
+        return 'context userId not found';
+    }
+
+
+    //validate user field as email
+    if (message.toUserId) {
+        var emailTest = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        if (!emailTest.test(message.toUserId)) {
+            return "toUserId is invalid";
+        }
+    }
+
+    return;
+};
+
 
 
 //input model = messageId (optional), message, toUserId, AllowEdit
@@ -181,7 +220,7 @@ function formatMessageToUpdate(newMessageText, oldData) {
 
 //send message to originator if message was updated not by that person.
 function messageUpdatedNowNotify(messageItem, mailer) {
-    
+
     if (messageItem.userIdUpdated !== messageItem.fromUserId) {
         var emailAddress = messageItem.fromUserId;
 
