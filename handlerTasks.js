@@ -26,7 +26,7 @@ module.exports.updateTask = (event, context, callback) => {
 
 module.exports.deleteTask = (event, context, callback) => {
     var item = event.body ? JSON.parse(event.body) : event;
-    tasks.deleteTask(event.taskId, callback);
+    tasks.deleteTask(item.taskId, callback);
 }
 
 module.exports.emailTasks = (event, context, callback) => {

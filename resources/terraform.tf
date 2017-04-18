@@ -219,6 +219,14 @@ resource "aws_iam_policy_attachment" "role_policy_writeDB" {
     policy_arn = "${aws_iam_policy.policy_terraform_for_writeDB.arn}"
 }
 
+resource "aws_iam_policy_attachment" "role_policy_deleteDB" {
+    name = "role_policy_deleteDB"
+    roles = [
+      "${aws_iam_role.iam_terraform_for_lambda_deleteTask.name}",
+    ]
+    policy_arn = "${aws_iam_policy.policy_terraform_for_deleteDB.arn}"
+}
+
 resource "aws_iam_policy_attachment" "role_policy_triggerDb" {
     name = "role_policy_triggerDb"
     roles = [
