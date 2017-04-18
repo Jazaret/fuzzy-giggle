@@ -37,9 +37,9 @@ class Messages {
 
         message = formatMessageToAdd(incomingMessage, contextUserId);
         message = sanitizeMessage(message);
-
+        
         var validateMsg = validateMessage(message);
-
+        
         if (validateMsg) {
             response = {
                 statusCode: 405,
@@ -162,26 +162,21 @@ function sanitizeMessage(data) {
 }
 
 //validates the properties of a message
-function validateMessage(message) {
+function validateMessage(messageItem) {
 
     //required fields
-    if (!message.message) {
-        'message is required';
+    if (!messageItem.message) {
+        return 'message is required';
     }
 
-    if (!message.toUserId) {
+    if (!messageItem.toUserId) {
         return 'toUserId is required';
     }
 
-    if (!message.contextUserId) {
-        return 'context userId not found';
-    }
-
-
     //validate user field as email
-    if (message.toUserId) {
+    if (messageItem.toUserId) {
         var emailTest = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        if (!emailTest.test(message.toUserId)) {
+        if (!emailTest.test(messageItem.toUserId)) {
             return "toUserId is invalid";
         }
     }
