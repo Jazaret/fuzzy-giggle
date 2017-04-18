@@ -206,6 +206,11 @@ class Tasks {
                 context.fail('Internal Error on read:' + err);
             } else {
                 data.Items.forEach(function (value) {
+                    if (!value.user) {
+                        //do nothing if user is not specified
+                        return;
+                    }
+
                     //check if recipient already exists
                     if (!emailsToSend[value.user]) {
                         //if recipient doesn't exist then add to master list
