@@ -467,7 +467,7 @@ resource "aws_lambda_permission" "allow_api_gateway_get" {
     statement_id = "AllowExecutionFromApiGatewayForGet"
     action = "lambda:InvokeFunction"
     principal = "apigateway.amazonaws.com"
-    source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*/"
+    source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*"
 }
 #End Tasks/Get#
 
@@ -512,7 +512,7 @@ resource "aws_lambda_permission" "allow_api_gateway_post" {
     statement_id = "AllowExecutionFromApiGatewayForPost"
     action = "lambda:InvokeFunction"
     principal = "apigateway.amazonaws.com"
-    source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*/"
+    source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*"
 }
 #End Tasks/POST#
 
@@ -557,7 +557,7 @@ resource "aws_lambda_permission" "allow_api_gateway_put" {
     statement_id = "AllowExecutionFromApiGatewayForPut"
     action = "lambda:InvokeFunction"
     principal = "apigateway.amazonaws.com"
-    source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*/"
+    source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*"
 }
 #End Tasks/PUT#
 
@@ -602,7 +602,7 @@ resource "aws_lambda_permission" "allow_api_gateway_delete" {
     statement_id = "AllowExecutionFromApiGatewayForDelete"
     action = "lambda:InvokeFunction"
     principal = "apigateway.amazonaws.com"
-    source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*/"
+    source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*"
 }
 #End Tasks/DELETE#
 
@@ -657,7 +657,7 @@ resource "aws_lambda_permission" "allow_api_gateway_get_messages" {
     statement_id = "AllowExecutionFromApiGatewayForGetMessages"
     action = "lambda:InvokeFunction"
     principal = "apigateway.amazonaws.com"
-    source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*/"
+    source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*"
 }
 #End messages/Get#
 
@@ -702,7 +702,7 @@ resource "aws_lambda_permission" "allow_api_gateway_post_messages" {
     statement_id = "AllowExecutionFromApiGatewayForPostMessages"
     action = "lambda:InvokeFunction"
     principal = "apigateway.amazonaws.com"
-    source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*/"
+    source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*"
 }
 #End messages/POST#
 
@@ -747,6 +747,6 @@ resource "aws_lambda_permission" "allow_api_gateway_put_messages" {
     statement_id = "AllowExecutionFromApiGatewayForPut"
     action = "lambda:InvokeFunction"
     principal = "apigateway.amazonaws.com"
-    source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*/"
+    source_arn = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.fuzzy_giggle_api.id}/*/*"
 }
 #End messages/PUT#
