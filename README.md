@@ -13,14 +13,14 @@ Features:
 * Updated messages are triggered to email to original message creator via DynamoDB trigger
 
 Files:
-* handlerTasks.js       - task lambda entry point
-* handlerMessages.js    - task lambda entry point
-* tasks.js              - task logic for task methods
-* tasks.js              - message logic for message methods
-* schemas.js            - model schemas
-* serverless.yml        - Serverless project settings file
-* terraform.tf          - Terraform project settings file
-* tests/*               - Test files
+* handlerTasks.js           - task lambda entry point
+* handlerMessages.js        - task lambda entry point
+* tasks.js                  - task logic for task methods
+* tasks.js                  - message logic for message methods
+* schemas.js                - model schemas
+* serverless.yml            - Serverless project settings file
+* resources/terraform.tf    - Terraform project settings file
+* tests/*                   - Test files
 
 Packages used:
 * aws-sdk
@@ -28,3 +28,4 @@ Packages used:
 * node-uuid
 * chai
 * mocha (global install)
+
