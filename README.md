@@ -36,9 +36,9 @@ Usage:
         GET Method - No parameters, returns list of messages
         POST Method - JSON of message in request body
             {
-                message: message to send,
-                toUserId: email address of user to message,
-                allowEdit: true/false if message can be updated by recipient
+                message: message to send (required),
+                toUserId: email address of user to message (required),
+                allowEdit: true/false if message can be updated by recipient (defaults to false)
             }
         PUT Method - JSON of message to update (with messageId to identify)
 
