@@ -16,7 +16,8 @@ Features:
 Getting Started:
 * Deploy the application using "terraform apply" in the resources directory or use "serverless deploy" in the root repository. 
 
-Application Instructions:
+Usage:
+
     <API_URL>\tasks
         GET Method - No parameters, returns a sorted list of tasks
         POST Method - JSON of task in request body 
