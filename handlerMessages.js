@@ -30,6 +30,22 @@ module.exports.updateMessage = (event, context, callback) => {
 }
 
 module.exports.triggerMessagesNotify = (event, context, callback) => {
-    console.log(JSON.stringify(event))
-    messages.triggerMessagesNotify(event.Records, context);
+    console.log(JSON.stringify(event));
+    var messageList = [];
+    event.Records.forEach(function(record) {
+        if (record.dynamodb && record.dynamodb.NewImage) {
+            var dbImage = record.dynamodb.NewImage;
+            messageList.push({
+                messageId: dbImage.messageId["S"],
+                userIdUpdated: dbImage.userIdUpdated["S"],
+                allowEdit: dbImage.allowEdit["BOOL"],
+                fromUserId: dbImage.fromUserId["S"],
+                message: dbImage.message["S"],
+                toUserId: dbImage.toUserId["S"],
+                dateUpdated: dbImage.dateUpdated["S"],
+                dateCreated: dbImage.dateCreated["S"],
+            });
+        }
+    });
+    messages.triggerMessagesNotify(messageList, context);
 }

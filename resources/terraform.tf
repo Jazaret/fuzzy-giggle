@@ -325,7 +325,7 @@ resource "aws_lambda_function" "triggerMessagesNotify_lambda" {
     filename = "fuzzy-giggle.zip"
     function_name = "triggerMessagesNotify"
     role = "${aws_iam_role.iam_terraform_for_lambda_messageDbTrigger.arn}"
-    handler = "handlerTasks.triggerMessagesNotify"
+    handler = "handlerMessages.triggerMessagesNotify"
     source_code_hash = "${base64sha256(file("fuzzy-giggle.zip"))}"
     timeout = 60
     runtime = "nodejs6.10"
@@ -374,7 +374,7 @@ resource "aws_api_gateway_integration" "Fuzzy-Giggle-GET-Integration-Tasks" {
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-get.http_method}"
   type = "AWS_PROXY"
-  integration_http_method = "GET"
+  integration_http_method = "POST"
   uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.getTasks_lambda.arn}/invocations"
 }
 
@@ -456,7 +456,7 @@ resource "aws_api_gateway_integration" "Fuzzy-Giggle-Put-Integration-Task" {
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-put.http_method}"
   type = "AWS_PROXY"
-  integration_http_method = "PUT"
+  integration_http_method = "POST"
   uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.updateTask_lambda.arn}/invocations"
 }
 
@@ -497,7 +497,7 @@ resource "aws_api_gateway_integration" "Fuzzy-Giggle-Delete-Integration-Task" {
   resource_id = "${aws_api_gateway_resource.tasks-resource.id}"
   http_method = "${aws_api_gateway_method.tasks-delete.http_method}"
   type = "AWS_PROXY"
-  integration_http_method = "DELETE"
+  integration_http_method = "POST"
   uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.deleteTask_lambda.arn}/invocations"
 }
 
@@ -547,7 +547,7 @@ resource "aws_api_gateway_integration" "Fuzzy-Giggle-GET-Integration-messages" {
   resource_id = "${aws_api_gateway_resource.messages-resource.id}"
   http_method = "${aws_api_gateway_method.messages-get.http_method}"
   type = "AWS_PROXY"
-  integration_http_method = "GET"
+  integration_http_method = "POST"
   uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.getMessages_lambda.arn}/invocations"
 }
 
@@ -629,7 +629,7 @@ resource "aws_api_gateway_integration" "Fuzzy-Giggle-Put-Integration-messages" {
   resource_id = "${aws_api_gateway_resource.messages-resource.id}"
   http_method = "${aws_api_gateway_method.messages-put.http_method}"
   type = "AWS_PROXY"
-  integration_http_method = "PUT"
+  integration_http_method = "POST"
   uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.updateMessage_lambda.arn}/invocations"
 }
 

@@ -139,10 +139,8 @@ class Messages {
     triggerMessagesNotify(messages, context) {
         var self = this;
         messages.forEach(function (messageItem) {
-
             //Only notify if the person who updated messsage is not the origniator.
             if (messageItem.userIdUpdated === messageItem.fromUserId) {
-                context.succeed('No need to do anything');
                 return;
             }
 
