@@ -18,11 +18,11 @@ package:
     - .vscode/**    
     - .gitignore
     - tests/**    
+    - resources/**    
     - package.json
     - README.md
     - terraform.tf
     - swagger.json
-
 
 functions:
   getTasks:

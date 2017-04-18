@@ -15,11 +15,13 @@ module.exports.getTasks = (event, context, callback) => {
 }
 
 module.exports.addTask = (event, context, callback) => {
-    tasks.addTask(event, callback);
+    var item = event.body ? JSON.parse(event.body) : event;
+    tasks.addTask(item, callback);
 };
 
 module.exports.updateTask = (event, context, callback) => {
-    tasks.updateTask(event, callback);
+    var item = event.body ? JSON.parse(event.body) : event;
+    tasks.updateTask(item, callback);
 }
 
 module.exports.deleteTask = (event, context, callback) => {

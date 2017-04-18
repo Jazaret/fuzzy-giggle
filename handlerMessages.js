@@ -12,25 +12,25 @@ let messages = new Messages(dynamo, process.env.TABLE_NAME, sesMailer);
 
 
 module.exports.getMessages = (event, context, callback) => {
-    console.log(JSON.stringify(context));
     messages.getMessages(callback);
 }
 
 module.exports.addMessage = (event, context, callback) => {    
     console.log(JSON.stringify(context));
-    //todo - use cognito for identity user context if possible
+    var item = event.body ? JSON.parse(event.body) : event;
+    //todo - use event.requestContext.identity to handle userId - cognito if possible.
     var contextUserId = event.contextUserId || 'jazaret@gmail.com';
-    messages.addMessage(event, contextUserId, callback);
+    messages.addMessage(item, contextUserId, callback);
 }
 
 module.exports.updateMessage = (event, context, callback) => {
-    //todo - use cognito for identity user context if possible
-    var contextUserId = event.contextUserId || 'jazaret@gmail.com';
-    messages.updateMessage(event, contextUserId, callback);
+    var item = event.body ? JSON.parse(event.body) : event;
+    //todo - use event.requestContext.identity to handle userId - cognito if possible.
+    var contextUserId = event.contextUserId || 'jazaret@gmail.com';    
+    messages.updateMessage(item, contextUserId, callback);
 }
 
 module.exports.triggerMessagesNotify = (event, context, callback) => {
-    console.log(JSON.stringify(event));
     var messageList = [];
     event.Records.forEach(function(record) {
         if (record.dynamodb && record.dynamodb.NewImage) {
