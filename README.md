@@ -16,7 +16,7 @@ Files:
 * handlerTasks.js           - task lambda entry point
 * handlerMessages.js        - task lambda entry point
 * tasks.js                  - task logic for task methods
-* tasks.js                  - message logic for message methods
+* messages.js               - message logic for message methods
 * schemas.js                - model schemas
 * serverless.yml            - Serverless project settings file
 * resources/terraform.tf    - Terraform project settings file
