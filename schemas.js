@@ -15,7 +15,7 @@ schemas = {
         message: null,
         toUserId: null,
         fromUserId: null,
-        allowEdit: null,
+        allowEdit: false,
         dateCreated: null,
         dateUpdated: null,
         userIdUpdated: null
