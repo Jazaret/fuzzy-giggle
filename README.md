@@ -21,7 +21,7 @@ Usage:
     <API_URL>\tasks
         GET Method - No parameters, returns a sorted list of tasks
         POST Method - JSON of task in request body 
-            task: {
+            {
                 user: User's email address,
                 description: Description of the task (required),
                 priority: Task priority, as a single-digit integer. 0 is highest priority (required),
@@ -35,7 +35,7 @@ Usage:
     <API_URL>\messages
         GET Method - No parameters, returns list of messages
         POST Method - JSON of message in request body
-            message: {
+            {
                 message: message to send,
                 toUserId: email address of user to message,
                 allowEdit: true/false if message can be updated by recipient
