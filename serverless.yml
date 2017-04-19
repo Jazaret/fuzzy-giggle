@@ -80,7 +80,7 @@ functions:
           - http: POST messages
   updateMessage:
       role: myRoleForUpdateMesssage
-      handler: handlerMessages.addMessage
+      handler: handlerMessages.updateMessage
       environment:
                 TABLE_NAME: messages-table          
       events:

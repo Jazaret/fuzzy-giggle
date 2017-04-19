@@ -38,9 +38,9 @@ class Messages {
 
         message = formatMessageToAdd(incomingMessage, contextUserId);
         message = sanitizeMessage(message);
-        
+
         var validateMsg = validateMessage(message);
-        
+
         if (validateMsg) {
             response = {
                 statusCode: 405,
@@ -97,18 +97,27 @@ class Messages {
                         body: "user not authorized to edit message"
                     };
                     callback(null, response);
+                    return;
                 }
 
                 var params = {
                     TableName: tableName,
                     Key: {
-                        "messageId": messageItem.messageId
+                        messageId: originalMessage.messageId
                     },
                     UpdateExpression: "set message = :m, updateDate=:d, userIdUpdate=:u",
                     ExpressionAttributeValues: {
-                        ":m": messageItem.message,
-                        ":d": new Date().toISOString,
-                        ":u": contextUserId
+                        ":m": {
+                            "S": messageItem.message
+                        },
+                        ":d": 
+                        {
+                            "S": new Date().toISOString()
+                        },
+                        ":u":
+                        {
+                            "S":  contextUserId
+                        }
                     },
                     ReturnValues: "UPDATED_NEW"
                 };
