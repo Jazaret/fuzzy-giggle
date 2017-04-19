@@ -90,6 +90,11 @@ resource "aws_iam_policy" "policy_terraform_for_logs" {
   policy = "${file("policies/logs_policy.json")}"
 }
 
+resource "aws_iam_policy" "policy_terraform_for_xray" {
+  name        = "policy_terraform_for_xray"
+  policy = "${file("policies/xray_tracer.json")}"
+}
+
 resource "aws_iam_policy" "policy_terraform_for_readDB" {
   name        = "policy_terraform_for_readDB"
   policy = <<EOF
@@ -246,6 +251,22 @@ resource "aws_iam_policy_attachment" "role_policy_ses" {
         "${aws_iam_role.iam_terraform_for_lambda_messageDbTrigger.name}",
     ]
     policy_arn = "${aws_iam_policy.policy_terraform_for_ses.arn}"
+}
+
+resource "aws_iam_policy_attachment" "role_policy_xray" {
+    name = "role_policy_xray"
+    roles = [
+      "${aws_iam_role.iam_terraform_for_lambda_getTasks.name}",
+      "${aws_iam_role.iam_terraform_for_lambda_addTask.name}",
+      "${aws_iam_role.iam_terraform_for_lambda_updateTask.name}",
+      "${aws_iam_role.iam_terraform_for_lambda_deleteTask.name}",
+      "${aws_iam_role.iam_terraform_for_lambda_emailTasks.name}",
+      "${aws_iam_role.iam_terraform_for_lambda_getMessages.name}",
+      "${aws_iam_role.iam_terraform_for_lambda_addMessage.name}",
+      "${aws_iam_role.iam_terraform_for_lambda_updateMessage.name}",
+      "${aws_iam_role.iam_terraform_for_lambda_messageDbTrigger.name}",
+    ]
+    policy_arn = "${aws_iam_policy.policy_terraform_for_xray.arn}"
 }
 
 
