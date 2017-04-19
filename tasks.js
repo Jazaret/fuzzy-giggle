@@ -51,6 +51,9 @@ class Tasks {
         }
 
         task = sanitizeTask(task);
+        if (!task.completed) {
+            delete task.completed;
+        }
         var params = {
             Item: task,
             TableName: this.tableName
@@ -112,6 +115,10 @@ class Tasks {
                         };
                         callback(null, response);
                         return;
+                    }
+
+                    if (!newTask.completed) {
+                        delete newTask.completed;
                     }
 
                     var putParams = {
