@@ -8,7 +8,7 @@ const dynamo = new doc.DynamoDB();
 
 const Messages = require('./messages');
 
-let messages = new Messages(dynamo, process.env.TABLE_NAME, sesMailer);
+let messages = new Messages(dynamo, process.env.TABLE_NAME, sesMailer, process.env.SYSTEM_EMAIL);
 
 
 module.exports.getMessages = (event, context, callback) => {
@@ -31,6 +31,7 @@ module.exports.updateMessage = (event, context, callback) => {
 }
 
 module.exports.triggerMessagesNotify = (event, context, callback) => {
+    console.log(JSON.stringify(event));
     var messageList = [];
     event.Records.forEach(function(record) {
         if (record.dynamodb && record.dynamodb.NewImage) {

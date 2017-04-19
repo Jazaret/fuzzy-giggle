@@ -2,6 +2,8 @@ var chai = require('chai');
 var expect = chai.expect;
 const Messages = require('../../messages');
 
+const systemEmail = 'jazaret@gmail.com';
+
 const messageList = [
     {
         "userIdUpdated": "jazaret@gmail.com",
@@ -43,11 +45,11 @@ describe('EmailMessage_Successful', function () {
             }
         }
 
-        let messages = new Messages(db, null, mailer);
+        let messages = new Messages(db, null, mailer, systemEmail);
 
         var context = {
             succeed: function (result) {
-                //expect(result).to.equal('Notifications sent');
+                expect(result).to.equal('Notifications sent');
             },
             fail: function () {
                 done(new Error('never context.fail'));

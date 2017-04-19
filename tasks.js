@@ -3,10 +3,11 @@ const schemas = require("./schemas.js");
 const _ = require("lodash");
 
 class Tasks {
-    constructor(db, tableName, mailer) {
+    constructor(db, tableName, mailer, systemEmailFrom) {
         this.db = db;
         this.mailer = mailer;
-        this.tableName = tableName
+        this.tableName = tableName;
+        this.systemEmailFrom = systemEmailFrom;
     };
 
     //Gets task list from database
@@ -51,13 +52,12 @@ class Tasks {
         }
 
         task = sanitizeTask(task);
-        if (!task.completed) {
-            delete task.completed;
-        }
+
         var params = {
             Item: task,
             TableName: this.tableName
         };
+        console.log(JSON.stringify(task));
         this.db.putItem(params, function (err, data) {
             if (err) {
                 callback(err, null);
@@ -196,9 +196,9 @@ class Tasks {
                     }
                 }
             },
-            Source: 'Me <jazaret@gmail.com>',
+            Source: this.systemEmailFrom,
             ReplyToAddresses: [
-                'Me <jazaret@gmail.com>'
+                this.systemEmailFrom
             ]
         };
 
@@ -212,6 +212,7 @@ class Tasks {
                 console.log(err);
                 context.fail('Internal Error on read:' + err);
             } else {
+                console.log(JSON.stringify(data));
                 data.Items.forEach(function (value) {
                     if (!value.user) {
                         //do nothing if user is not specified
@@ -265,7 +266,13 @@ class Tasks {
 function sanitizeTask(data) {
     data = data || {};
     schema = schemas.task;
-    return _.pick(_.defaults(data, schema), _.keys(schema));
+    var result = _.pick(_.defaults(data, schema), _.keys(schema));
+    
+    //want this to not exist
+    if (!result.completed) {
+        delete result.completed;
+    }
+    return result;
 }
 
 //validates the properties of a task

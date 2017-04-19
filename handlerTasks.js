@@ -8,7 +8,7 @@ const dynamo = new doc.DynamoDB();
 
 const Tasks = require('./tasks');
 
-let tasks = new Tasks(dynamo, process.env.TABLE_NAME, sesMailer);
+let tasks = new Tasks(dynamo, process.env.TABLE_NAME, sesMailer, process.env.SYSTEM_EMAIL);
 
 module.exports.getTasks = (event, context, callback) => {
     tasks.getTasks(callback);

@@ -2,6 +2,8 @@ var chai = require('chai');
 var expect = chai.expect;
 const Tasks = require('../../tasks');
 
+const systemEmail = 'jazaret@gmail.com';
+
 const taskList = [
     {
         user: "jazaret@gmail.com",
@@ -43,7 +45,7 @@ describe('EmailTasks_Successful', function () {
             }
         }
 
-        let tasks = new Tasks(db, null, mailer);
+        let tasks = new Tasks(db, null, mailer, systemEmail);
 
         var context = {
             succeed: function (result) {

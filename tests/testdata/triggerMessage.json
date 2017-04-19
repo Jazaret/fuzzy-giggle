@@ -1,0 +1,75 @@
+{
+    "Records": [
+        {
+            "eventID": "166dde099b478db8291faaf440730d23",
+            "eventName": "MODIFY",
+            "eventVersion": "1.1",
+            "eventSource": "aws:dynamodb",
+            "awsRegion": "us-west-2",
+            "dynamodb": {
+                "ApproximateCreationDateTime": 1492615380,
+                "Keys": {
+                    "messageId": {
+                        "S": "3eaad560-2456-11e7-bc24-e7d9e7ec6e49"
+                    }
+                },
+                "NewImage": {
+                    "dateCreated": {
+                        "S": "2017-04-18T16:44:09.525Z"
+                    },
+                    "userIdUpdated": {
+                        "S": "j.azaret@gmail.com"
+                    },
+                    "allowEdit": {
+                        "BOOL": true
+                    },
+                    "fromUserId": {
+                        "S": "jazaret@gmail.com"
+                    },
+                    "messageId": {
+                        "S": "3eaad560-2456-11e7-bc24-e7d9e7ec6e49"
+                    },
+                    "message": {
+                        "S": "hello world"
+                    },
+                    "toUserId": {
+                        "S": "j.azaret@gmail.com"
+                    },
+                    "dateUpdated": {
+                        "S": "2017-04-18T16:44:09.525Z"
+                    }
+                },
+                "OldImage": {
+                    "dateCreated": {
+                        "S": "2017-04-18T16:44:09.525Z"
+                    },
+                    "userIdUpdated": {
+                        "S": "jazaret@gmail.com"
+                    },
+                    "allowEdit": {
+                        "BOOL": true
+                    },
+                    "fromUserId": {
+                        "S": "jazaret@gmail.com"
+                    },
+                    "messageId": {
+                        "S": "3eaad560-2456-11e7-bc24-e7d9e7ec6e49"
+                    },
+                    "message": {
+                        "S": "hello world"
+                    },
+                    "toUserId": {
+                        "S": "j.azaret@gmail.com"
+                    },
+                    "dateUpdated": {
+                        "S": "2017-04-18T16:44:09.525Z"
+                    }
+                },
+                "SequenceNumber": "4464600000000017320826915",
+                "SizeBytes": 498,
+                "StreamViewType": "NEW_AND_OLD_IMAGES"
+            },
+            "eventSourceARN": "arn:aws:dynamodb:us-west-2:918902313573:table/messages-table/stream/2017-04-18T16:32:56.611"
+        }
+    ]
+}

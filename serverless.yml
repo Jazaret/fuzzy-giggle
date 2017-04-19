@@ -6,6 +6,8 @@ service: fuzzy-giggle
 provider:
   name: aws
   runtime: nodejs6.10
+  environment:
+    SYSTEM_EMAIL: jazaret@gmail.com  
 
 # you can overwrite defaults here
 #  stage: dev

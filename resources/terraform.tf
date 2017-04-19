@@ -3,7 +3,11 @@ data "aws_caller_identity" "current" { }
 variable "region" {
     default = "us-west-2"
 }
-    
+
+variable "system_email" {
+    default = "jazaret@gmail.com"
+}
+
 provider "aws" {
   region = "${var.region}"
   profile                  = "default"
@@ -318,7 +322,8 @@ resource "aws_lambda_function" "emailTasks_lambda" {
     runtime = "nodejs6.10"
     environment {
       variables = {
-        TABLE_NAME = "tasks-table"
+        TABLE_NAME = "tasks-table",
+        SYSTEM_EMAIL = "${var.system_email}"
       }
     }
 }
@@ -404,7 +409,8 @@ resource "aws_lambda_function" "triggerMessagesNotify_lambda" {
     runtime = "nodejs6.10"
     environment {
       variables = {
-        TABLE_NAME = "messages-table"
+        TABLE_NAME = "messages-table",
+        SYSTEM_EMAIL = "${var.system_email}"
       }
     }
 }

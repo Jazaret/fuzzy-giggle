@@ -3,10 +3,11 @@ const schemas = require("./schemas.js");
 const _ = require("lodash");
 
 class Messages {
-    constructor(db, tableName, mailer) {
+    constructor(db, tableName, mailer, systemEmailFrom) {
         this.db = db;
         this.mailer = mailer;
-        this.tableName = tableName
+        this.tableName = tableName;
+        this.systemEmailFrom = systemEmailFrom;
     };
 
     //Gets message list from database
@@ -144,7 +145,8 @@ class Messages {
                 return;
             }
 
-            messageUpdatedNowNotify(messageItem, self.mailer);
+
+            messageUpdatedNowNotify(messageItem, self.mailer, self.systemEmailFrom);
         });
 
         context.succeed('Notifications sent');
@@ -212,7 +214,7 @@ function formatMessageToUpdate(newMessageText, oldData) {
 };
 
 //send message to originator if message was updated not by that person.
-function messageUpdatedNowNotify(messageItem, mailer) {
+function messageUpdatedNowNotify(messageItem, mailer, systemEmailFrom) {
 
     if (messageItem.userIdUpdated !== messageItem.fromUserId) {
         var emailAddress = messageItem.fromUserId;
@@ -235,12 +237,13 @@ function messageUpdatedNowNotify(messageItem, mailer) {
                     }
                 }
             },
-            Source: 'Me <jazaret@gmail.com>',
+            Source: systemEmailFrom,
             ReplyToAddresses: [
-                'Me <jazaret@gmail.com>'
+                systemEmailFrom
             ]
         };
-
+        console.log("sendEmail");
+        console.log(JSON.stringify(emailParams));
         mailer.sendEmail(emailParams, function (err, data) {
             if (err) {
                 console.log(err, err.stack);
