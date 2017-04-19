@@ -74,7 +74,7 @@ describe('UpdateMessage_Authorized_Update', function () {
         var callback = function (err, response) {
             expect(response.statusCode).to.equal(200);
             var messageUpdated = JSON.parse(response.body).message;
-            expect(messageUpdated.message).to.equal(messageToUpdate2.message);
+            expect(messageUpdated.message['S']).to.equal(messageToUpdate2.message);
             done();
         };
 
