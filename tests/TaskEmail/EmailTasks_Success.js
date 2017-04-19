@@ -49,7 +49,6 @@ describe('EmailTasks_Successful', function () {
 
         var context = {
             succeed: function (result) {
-                expect(result).to.equal('Jobs done');
             },
             fail: function () {
                 done(new Error('never context.fail'));

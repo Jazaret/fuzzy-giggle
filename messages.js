@@ -157,8 +157,6 @@ class Messages {
 
             messageUpdatedNowNotify(messageItem, self.mailer, self.systemEmailFrom);
         });
-
-        context.succeed('Notifications sent');
     };
 }
 

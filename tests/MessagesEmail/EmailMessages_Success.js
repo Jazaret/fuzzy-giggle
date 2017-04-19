@@ -49,7 +49,6 @@ describe('EmailMessage_Successful', function () {
 
         var context = {
             succeed: function (result) {
-                expect(result).to.equal('Notifications sent');
             },
             fail: function () {
                 done(new Error('never context.fail'));

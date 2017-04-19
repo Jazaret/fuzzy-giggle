@@ -255,8 +255,6 @@ class Tasks {
                         }
                     });
                 });
-
-                context.succeed('Jobs done');
             }
         });
     };

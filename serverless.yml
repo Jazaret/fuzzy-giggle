@@ -19,12 +19,15 @@ package:
     - .vs/**
     - .vscode/**    
     - .gitignore
+    - node_modules/**    
     - tests/**    
     - resources/**    
     - package.json
     - README.md
     - terraform.tf
     - swagger.json
+  include:
+    - node_modules/node-uuid/**
 
 functions:
   getTasks:
@@ -128,7 +131,7 @@ resources:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5       
         StreamSpecification:
-                  StreamViewType: NEW_AND_OLD_IMAGES                               
+                  StreamViewType: NEW_AND_OLD_IMAGES       
     myRoleForGetTasks:
       Type: AWS::IAM::Role
       Properties:
@@ -350,6 +353,7 @@ resources:
                   Action:
                       - dynamodb:GetItem
                       - dynamodb:PutItem
+                      - dynamodb:UpdateItem
                   Resource: arn:aws:dynamodb:*:*:table/messages-table                      
     myRoleForMessagesEmailDbTrigger:
       Type: AWS::IAM::Role
