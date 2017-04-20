@@ -62,7 +62,7 @@ Packages used:
 * chai
 * mocha (global install)
 
-Improvements:
+Improvements (todo):
 * Migrate tasks and messages to seperate code paths to facilitate microservice architecture.
 * Create database indexes to use proper queries instead of full table scans for performance.
 * Use cognito for user context in messages system.
