@@ -1,6 +1,6 @@
 var chai = require('chai');
 var expect = chai.expect;
-const Messages = require('../../Messages');
+const Messages = require('../../messages');
 
 const db = {
     putItem: function (params, callback) {
