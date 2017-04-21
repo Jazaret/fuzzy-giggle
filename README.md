@@ -1,4 +1,4 @@
-# fuzzy-giggle
+# fuzzy-giggle  [![Build Status](https://travis-ci.org/Jazaret/fuzzy-giggle.svg?branch=master)](https://travis-ci.org/Jazaret/fuzzy-giggle)
 
 This is a serverless task application using lambdas (using NodeJS), gateway API, DynamoDb, & CloudWatch events.  
 
